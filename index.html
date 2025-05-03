@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Medidas de Mueble</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <style>
+        /* CSS custom mínimo */
+        #app {
+            max-width: 800px; /* Limita el ancho en pantallas grandes */
+        }
+        .table th, .table td {
+            vertical-align: middle; /* Centra verticalmente el contenido de las celdas */
+        }
+    </style>
+</head>
+<body>
+    <div id="app" class="container mt-4 mb-5">
+        <h1 class="mb-4 text-center">Calculadora de Medidas para Mueble</h1>
+
+        <div class="row g-3 mb-4 p-3 border rounded bg-light shadow-sm">
+            <h2 class="fs-5 mb-3">Dimensiones Externas y Material</h2>
+            <div class="col-md-6 col-lg-3">
+                <label for="largo" class="form-label">Largo Base (cm):</label>
+                <input type="number" id="largo" class="form-control" v-model.number="largo" min="1">
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <label for="ancho" class="form-label">Ancho Base (cm):</label>
+                <input type="number" id="ancho" class="form-control" v-model.number="ancho" min="1">
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <label for="alto" class="form-label">Alto Total (cm):</label>
+                <input type="number" id="alto" class="form-control" v-model.number="alto" min="1">
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <label for="espesor" class="form-label">Espesor Material (mm):</label>
+                <input type="number" id="espesor" class="form-control" v-model.number="espesor" min="1" step="0.1">
+            </div>
+        </div>
+
+        <h2 class="fs-4 mt-5 mb-3 text-center">Despiece Calculado</h2>
+        <div class="table-responsive">
+            <table class="table table-striped table-bordered table-hover shadow-sm">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Etiqueta</th>
+                        <th>Cantidad</th>
+                        <th>Medida 1 (cm)</th>
+                        <th>Medida 2 (cm)</th>
+                        <th>Notas</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-if="piezasCalculadas.length === 0">
+                        <td colspan="5" class="text-center">Ingrese las dimensiones para calcular las piezas.</td>
+                    </tr>
+                    <tr v-for="pieza in piezasCalculadas" :key="pieza.etiqueta">
+                        <td>{{ pieza.etiqueta }}</td>
+                        <td>{{ pieza.cantidad }}</td>
+                        <td>{{ formatDecimal(pieza.dim1) }}</td>
+                        <td>{{ formatDecimal(pieza.dim2) }}</td>
+                        <td>{{ pieza.nota || '-' }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+         <p class="text-center text-muted mt-4">
+            Nota: Cálculo basado en una construcción simple de caja donde los laterales cubren los cantos de la base/tapa y el frente/trasera encajan entre los laterales. Las medidas resultantes son las de las piezas individuales.
+        </p>
+    </div>
+
+    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+    <script>
+        const { createApp, ref, computed } = Vue;
+
+        createApp({
+            setup() {
+                // --- Estado Reactivo (Data) ---
+                const largo = ref(80);   // cm
+                const ancho = ref(80);   // cm
+                const alto = ref(160);  // cm
+                const espesor = ref(9); // mm
+
+                // --- Propiedades Calculadas (Computed) ---
+                const piezasCalculadas = computed(() => {
+                    // Validar entradas básicas
+                    if (largo.value <= 0 || ancho.value <= 0 || alto.value <= 0 || espesor.value <= 0) {
+                        return []; // Retorna vacío si alguna medida es inválida
+                    }
+
+                    const L = parseFloat(largo.value);
+                    const A = parseFloat(ancho.value);
+                    const H = parseFloat(alto.value);
+                    const E_mm = parseFloat(espesor.value);
+                    const E_cm = E_mm / 10; // Convertir espesor a cm para cálculos
+
+                    // Verificar que las dimensiones sean mayores que los espesores necesarios
+                    if (L <= 2 * E_cm || H <= 0) { // Se necesita espacio para laterales
+                         console.warn("El largo debe ser mayor que el doble del espesor.");
+                         // Podrías retornar un array con un mensaje de error o []
+                         return [{ etiqueta: 'Error', cantidad: '-', dim1: 'Largo inválido', dim2: 'respecto al espesor', nota: 'Ajuste las medidas' }];
+                    }
+                     if (A <= 0) {
+                        console.warn("El ancho debe ser positivo.");
+                         return [{ etiqueta: 'Error', cantidad: '-', dim1: 'Ancho inválido', dim2: '-', nota: 'Ajuste las medidas' }];
+                    }
+
+
+                    // Lógica de cálculo (asume laterales cubren base/tapa, frente/trasera entre laterales)
+                    const piezas = [
+                        {
+                            etiqueta: 'Base',
+                            cantidad: 1,
+                            dim1: L, // Largo
+                            dim2: A, // Ancho
+                            nota: 'Pieza inferior'
+                        },
+                        {
+                            etiqueta: 'Tapa',
+                            cantidad: 1,
+                            dim1: L, // Largo
+                            dim2: A, // Ancho
+                            nota: 'Pieza superior'
+                        },
+                        {
+                            etiqueta: 'Lateral',
+                            cantidad: 2,
+                            dim1: H,       // Alto total
+                            dim2: A,       // Ancho total
+                            nota: 'Caras laterales principales'
+                        },
+                        {
+                            etiqueta: 'Frente',
+                            cantidad: 1,
+                            dim1: H,                    // Alto total
+                            dim2: L - (2 * E_cm),       // Largo menos 2 espesores laterales
+                            nota: 'Pieza frontal (entre laterales)'
+                        },
+                        {
+                            etiqueta: 'Trasera',
+                            cantidad: 1,
+                            dim1: H,                    // Alto total
+                            dim2: L - (2 * E_cm),       // Largo menos 2 espesores laterales
+                            nota: 'Pieza posterior (entre laterales)'
+                        }
+                    ];
+
+                     // Filtrar piezas con dimensiones no positivas (resultado de cálculos)
+                    return piezas.filter(p => p.dim1 > 0 && p.dim2 > 0);
+                });
+
+                // --- Métodos ---
+                const formatDecimal = (value) => {
+                    if (typeof value === 'number') {
+                        // Redondea a 2 decimales y convierte a string
+                        // Evita mostrar .00 para enteros si se prefiere
+                         // return value % 1 === 0 ? value.toString() : value.toFixed(2);
+                         return value.toFixed(2); // Siempre mostrar 2 decimales para consistencia
+                    }
+                    return value; // Devuelve el valor original si no es número (p.ej. mensajes de error)
+                };
+
+
+                // --- Exponer al Template ---
+                return {
+                    largo,
+                    ancho,
+                    alto,
+                    espesor,
+                    piezasCalculadas,
+                    formatDecimal
+                };
+            }
+        }).mount('#app');
+    </script>
+
+</body>
+</html>
