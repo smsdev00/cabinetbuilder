@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora de Mueble - Plano de Corte v1.1</title>
+    <title>Calculadora de Mueble - Plano de Corte v1.2</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <style>
         #app {
@@ -25,31 +25,39 @@
             background-color: #e9ecef;
             padding: 10px;
             border-radius: 5px;
-            border-left: 4px solid #0d6efd; /* Blue accent */
+            border-left: 4px solid #0d6efd;
             margin-bottom: 1.5rem;
         }
-        /* --- Estilos para el Plano de Corte --- */
+        /* --- Estilos Plano de Corte --- */
         .sheet-layout-container {
             position: relative;
             border: 2px solid #343a40;
             background-color: #fdfdfd;
             width: 100%;
-            max-width: 500px; /* Límite visual */
+            max-width: 500px;
             margin: 0 auto 15px auto;
             overflow: hidden;
             box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
-            /* Aspect ratio se aplica dinámicamente */
         }
         .placed-piece {
             position: absolute;
-            border: 1px solid rgba(0, 0, 0, 0.7); /* Borde más visible */
+            border: 1px solid rgba(0, 0, 0, 0.7);
             box-sizing: border-box;
             overflow: hidden;
-             /* Asegurar visibilidad mínima */
             min-width: 1px;
             min-height: 1px;
-            /* Transición suave */
-            /* transition: all 0.1s ease-in-out; */ /* Puede ser molesto al recalcular */
+            /* ** CSS para centrar texto ** */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            /* ** Estilos del texto ** */
+            color: white;
+            font-size: 0.7rem; /* Ajustar según necesidad */
+            font-weight: bold;
+            text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.8);
+            text-align: center; /* Fallback */
+            line-height: 1; /* Ajustar si el texto se corta verticalmente */
+            user-select: none; /* Evitar seleccionar el texto accidentalmente */
         }
          .board-header {
             font-weight: bold;
@@ -57,14 +65,14 @@
             text-align: center;
          }
          .piece-tooltip-content {
-            white-space: pre; /* Para respetar saltos de línea en title */
+            white-space: pre;
          }
 
     </style>
 </head>
 <body>
     <div id="app" class="container mt-4 mb-5">
-        <h1 class="mb-4 text-center">Calculadora de Mueble - Plano de Corte Estimado v1.1</h1>
+        <h1 class="mb-4 text-center">Calculadora de Mueble - Plano de Corte Estimado v1.2</h1>
 
         <div class="row">
              <div class="col-lg-6">
@@ -116,10 +124,17 @@
                 <h3 class="fs-5 mt-4 mb-3 text-center">Despiece Detallado del Mueble</h3>
                  <div class="table-responsive mb-4">
                      <table class="table table-striped table-bordered table-hover table-sm">
-                         <thead class="table-dark"><tr><th>Etiqueta</th><th>Cantidad</th><th>Medida 1 (cm)</th><th>Medida 2 (cm)</th><th>Color Ref.</th><th>Notas</th></tr></thead>
+                         <thead class="table-dark"><tr><th>Etiqueta</th><th>Cód.</th><th>Cantidad</th><th>Medida 1 (cm)</th><th>Medida 2 (cm)</th><th>Color Ref.</th><th>Notas</th></tr></thead>
                          <tbody>
-                             <tr v-if="piezasCalculadas.length === 0 || piezasCalculadas[0].etiqueta === 'Error'"><td colspan="6" class="text-center fst-italic">{{ piezasCalculadas.length > 0 ? piezasCalculadas[0].dim1 : 'Ingrese dimensiones válidas.' }}</td></tr>
-                             <tr v-else v-for="pieza in piezasCalculadas" :key="pieza.etiqueta + pieza.dim1"><td :style="{borderLeft: `5px solid ${pieza.color}`}">{{ pieza.etiqueta }}</td><td>{{ pieza.cantidad }}</td><td>{{ formatDecimal(pieza.dim1) }}</td><td>{{ formatDecimal(pieza.dim2) }}</td><td><span :style="{ backgroundColor: pieza.color, padding: '2px 8px', borderRadius: '3px' }">&nbsp;</span></td><td>{{ pieza.nota || '-' }}</td></tr>
+                             <tr v-if="piezasCalculadas.length === 0 || piezasCalculadas[0].etiqueta === 'Error'"><td colspan="7" class="text-center fst-italic">{{ piezasCalculadas.length > 0 ? piezasCalculadas[0].dim1 : 'Ingrese dimensiones válidas.' }}</td></tr>
+                             <tr v-else v-for="pieza in piezasCalculadas" :key="pieza.etiqueta + pieza.dim1">
+                                <td :style="{borderLeft: `5px solid ${pieza.color}`}">{{ pieza.etiqueta }}</td>
+                                <td class="fw-bold">{{ pieza.shortCode }}</td> <td>{{ pieza.cantidad }}</td>
+                                <td>{{ formatDecimal(pieza.dim1) }}</td>
+                                <td>{{ formatDecimal(pieza.dim2) }}</td>
+                                <td><span :style="{ backgroundColor: pieza.color, padding: '2px 8px', borderRadius: '3px' }">&nbsp;</span></td>
+                                <td>{{ pieza.nota || '-' }}</td>
+                             </tr>
                          </tbody>
                      </table>
                  </div>
@@ -129,16 +144,16 @@
                       Representación visual basada en el packer simplificado. NO considera ancho de corte (kerf).
                   </p>
                  <div v-if="resultadoCorte.boardData && resultadoCorte.boardData.length > 0 && !resultadoCorte.error" class="row">
-                    <div v-for="board in resultadoCorte.boardData" :key="board.id" class="col-lg-6 mb-4"> <div class="board-header">Tabla #{{ board.id }}</div>
+                    <div v-for="board in resultadoCorte.boardData" :key="board.id" class="col-lg-6 mb-4">
+                        <div class="board-header">Tabla #{{ board.id }}</div>
                         <div class="sheet-layout-container"
-                             :style="{
-                                 aspectRatio: (currentSheetWidth > 0 ? currentSheetWidth : 1) / (currentSheetHeight > 0 ? currentSheetHeight : 1)
-                             }">
+                             :style="{ aspectRatio: (currentSheetWidth > 0 ? currentSheetWidth : 1) / (currentSheetHeight > 0 ? currentSheetHeight : 1) }">
                              <div v-for="piece in board.pieces"
                                   :key="piece.id"
                                   class="placed-piece"
                                   :style="getPieceStyle(piece, currentSheetWidth, currentSheetHeight)"
                                   :title="getPieceTooltip(piece)">
+                                  {{ piece.shortCode }}
                              </div>
                         </div>
                     </div>
@@ -155,159 +170,151 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 
     <script>
-        const { createApp, ref, computed, watch } = Vue; // Añadimos watch si fuera necesario
+        const { createApp, ref, computed } = Vue;
 
         createApp({
             setup() {
                 // --- Estado Reactivo ---
-                const largo = ref(80);
-                const ancho = ref(80);
-                const alto = ref(160);
-                const espesor = ref(9);
-                const sheetHeight = ref(260);
-                const sheetWidth = ref(183);
-                const boardPrice = ref(25000);
-                const currentDateTime = ref(''); // Para fecha y hora
+                const largo = ref(80); const ancho = ref(80); const alto = ref(160);
+                const espesor = ref(9); const sheetHeight = ref(260); const sheetWidth = ref(183);
+                const boardPrice = ref(25000); const currentDateTime = ref('');
 
-                const updateDateTime = () => {
-                    currentDateTime.value = new Date().toLocaleString('es-AR', {
-                         timeZone: 'America/Argentina/Buenos_Aires', // Especificar zona horaria
-                         dateStyle: 'long', timeStyle: 'medium'
-                     });
-                };
-                updateDateTime(); // Inicializar
-                // Podrías añadir un intervalo si quisieras que se actualice, pero no es necesario aquí.
+                const updateDateTime = () => { /* ... igual ... */
+                     currentDateTime.value = new Date().toLocaleString('es-AR', { timeZone: 'America/Argentina/Buenos_Aires', dateStyle: 'long', timeStyle: 'medium' });
+                 };
+                updateDateTime();
 
-                const colorMap = { /* Mismo colorMap */
-                    'Base': '#dc3545', 'Tapa': '#fd7e14', 'Lateral': '#ffc107',
-                    'Frente': '#20c997', 'Trasera': '#0d6efd', 'Error': '#6c757d'
+                // --- Mapeos ---
+                const colorMap = { /* ... igual ... */
+                     'Base': '#dc3545', 'Tapa': '#fd7e14', 'Lateral': '#ffc107',
+                     'Frente': '#20c997', 'Trasera': '#0d6efd', 'Error': '#6c757d'
+                 };
+                // *** NUEVO MAPEO DE CÓDIGOS CORTOS ***
+                const shortCodeMap = {
+                    'Base': 'B',
+                    'Tapa': 'T',
+                    'Lateral': 'L',
+                    'Frente': 'F',
+                    'Trasera': 'R', // 'R' for Rear
+                    'Error': 'ERR'
                 };
 
                 // --- Funciones Auxiliares ---
                 const formatDecimal = (value) => typeof value === 'number' ? value.toFixed(1) : value;
-                const formatCurrency = (value) => {
+                const formatCurrency = (value) => { /* ... igual ... */
                      if (typeof value !== 'number' || isNaN(value)) return '$ --.--';
                      return `$ ${value.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-                };
+                 };
 
-                // --- Función de Packing (SIN CAMBIOS respecto a la versión anterior) ---
-                function fitPiezasEnTablas(piezasInput, sheetWidth, sheetHeight) {
-                     // El código interno completo de esta función es el mismo que en la respuesta anterior
-                     // (crearHoja, puedeColocar, colocarPiezaEnHoja, expansión, ordenación, bucle principal)
-                     // ...
+                // --- Función de Packing (SIN CAMBIOS EN SU LÓGICA INTERNA) ---
+                // La función fitPiezasEnTablas es la misma que antes. Solo necesita que
+                // la pieza que recibe en `colocarPiezaEnHoja` tenga la propiedad `shortCode`.
+                 function fitPiezasEnTablas(piezasInput, sheetWidth, sheetHeight) { /* ... código interno igual ... */
                      const hojas = []; let globalPieceIdCounter = 1;
                      function crearHoja(id){ return { id: id, ocupados: [], espacios: [{ x: 0, y: 0, w: sheetWidth, h: sheetHeight }] }; }
                      function puedeColocar(pw, ph, sp){ const cn=pw<=sp.w&&ph<=sp.h; const cr=ph<=sp.w&&pw<=sp.h; return {cabe:cn||cr, necesitaRotar:!cn&&cr}; }
-                     function colocarPiezaEnHoja(hoja, pOrig){
+                     function colocarPiezaEnHoja(hoja, pOrig){ // pOrig ahora tendrá 'shortCode'
                          let mejorIdx=-1, rotar=false;
                          for(let i=0; i<hoja.espacios.length; i++){ const sp=hoja.espacios[i]; const {cabe,necesitaRotar}=puedeColocar(pOrig.w,pOrig.h,sp); if(cabe){mejorIdx=i; rotar=necesitaRotar; break;}}
                          if(mejorIdx!==-1){
                              const sp=hoja.espacios[mejorIdx]; const rt=rotar; const w=rt?pOrig.h:pOrig.w; const h=rt?pOrig.w:pOrig.h;
-                             hoja.ocupados.push({id: pOrig.id, x: sp.x, y: sp.y, w: w, h: h, etiqueta: pOrig.etiqueta, color: pOrig.color, originalDim1: pOrig.originalDim1, originalDim2: pOrig.originalDim2});
+                             // Añadir shortCode al objeto guardado en 'ocupados'
+                             hoja.ocupados.push({
+                                id: pOrig.id, x: sp.x, y: sp.y, w: w, h: h,
+                                etiqueta: pOrig.etiqueta, color: pOrig.color, shortCode: pOrig.shortCode, // <-- Añadido
+                                originalDim1: pOrig.originalDim1, originalDim2: pOrig.originalDim2
+                             });
                              hoja.espacios.splice(mejorIdx,1);
                              if(sp.w-w>0.1) hoja.espacios.push({x:sp.x+w, y:sp.y, w:sp.w-w, h:sp.h});
-                             if(sp.h-h>0.1) hoja.espacios.push({x:sp.x, y:sp.y+h, w:w, h:sp.h-h}); // Ancho era w aquí! Corregido
+                             if(sp.h-h>0.1) hoja.espacios.push({x:sp.x, y:sp.y+h, w:w, h:sp.h-h});
                              return true;
                          } return false;
                      }
                      let todas=[];
-                     for(const pIn of piezasInput){ const pw=pIn.dim1; const ph=pIn.dim2; if(!((pw<=sheetHeight&&ph<=sheetWidth)||(pw<=sheetWidth&&ph<=sheetHeight))) throw new Error(`Pieza ${pIn.etiqueta} (${formatDecimal(pw)}x${formatDecimal(ph)}) no cabe.`); for(let i=0; i<pIn.cantidad; i++) todas.push({id:globalPieceIdCounter++, w:pw, h:ph, area:pw*ph, etiqueta:pIn.etiqueta, color:pIn.color, originalDim1:pw, originalDim2:ph}); }
+                     for(const pIn of piezasInput){ const pw=pIn.dim1; const ph=pIn.dim2; if(!((pw<=sheetHeight&&ph<=sheetWidth)||(pw<=sheetWidth&&ph<=sheetHeight))) throw new Error(`Pieza ${pIn.etiqueta} (${formatDecimal(pw)}x${formatDecimal(ph)}) no cabe.`); for(let i=0; i<pIn.cantidad; i++) todas.push({
+                         id:globalPieceIdCounter++, w:pw, h:ph, area:pw*ph,
+                         etiqueta:pIn.etiqueta, color:pIn.color, shortCode: pIn.shortCode, // <-- Añadido aquí también
+                         originalDim1:pw, originalDim2:ph
+                         });
+                     }
                      todas.sort((a,b)=>b.area-a.area);
                      for(const p of todas){ let colocada=false; for(const h of hojas){if(colocarPiezaEnHoja(h,p)){colocada=true; break;}} if(!colocada){const nH=crearHoja(hojas.length+1); if(colocarPiezaEnHoja(nH,p)) hojas.push(nH); else throw new Error(`Error al colocar ${p.etiqueta} en hoja nueva.`);}}
                      return hojas;
-                }
+                 }
 
 
                 // --- Propiedades Calculadas ---
-                const piezasCalculadas = computed(() => { /* SIN CAMBIOS */
+                const piezasCalculadas = computed(() => { /* Modificado para añadir shortCode */
                     const L = parseFloat(largo.value); const A = parseFloat(ancho.value);
                     const H = parseFloat(alto.value); const E_mm = parseFloat(espesor.value);
-                    if (isNaN(L) || isNaN(A) || isNaN(H) || isNaN(E_mm) || L <= 0 || A <= 0 || H <= 0 || E_mm <= 0) return [];
-                    const E_cm = E_mm / 10;
-                    if (L <= 2 * E_cm) return [{ etiqueta: 'Error', cantidad: '-', dim1: 'Largo insuficiente', nota: 'Ajuste medidas', color: colorMap['Error'] }];
-                    // ... más validaciones ...
+                    // ... validaciones ...
+                     if (isNaN(L) || isNaN(A) || isNaN(H) || isNaN(E_mm) || L <= 0 || A <= 0 || H <= 0 || E_mm <= 0) return [];
+                     const E_cm = E_mm / 10;
+                     if (L <= 2 * E_cm) return [{ etiqueta: 'Error', cantidad: '-', dim1: 'Largo insuficiente', nota: 'Ajuste medidas', color: colorMap['Error'], shortCode: shortCodeMap['Error'] }];
+                     // ... más validaciones con shortCode ...
+
                     const piezasBase = [ /* ...definición piezas... */
                         { etiqueta: 'Base', cantidad: 1, dim1: L, dim2: A, nota: 'Pieza inferior' },
                         { etiqueta: 'Tapa', cantidad: 1, dim1: L, dim2: A, nota: 'Pieza superior' },
                         { etiqueta: 'Lateral', cantidad: 2, dim1: H, dim2: A, nota: 'Caras laterales' },
                         { etiqueta: 'Frente', cantidad: 1, dim1: H, dim2: L - (2 * E_cm), nota: 'Frontal (entre laterales)' },
                         { etiqueta: 'Trasera', cantidad: 1, dim1: H, dim2: L - (2 * E_cm), nota: 'Posterior (entre laterales)' }
-                     ];
-                    return piezasBase.filter(p => p.dim1 > 0.1 && p.dim2 > 0.1)
-                                    .map(p => ({ ...p, color: colorMap[p.etiqueta] || '#6c757d' }));
+                    ];
+
+                    return piezasBase
+                        .filter(p => p.dim1 > 0.1 && p.dim2 > 0.1)
+                        .map(p => ({
+                            ...p,
+                            color: colorMap[p.etiqueta] || '#6c757d',
+                            shortCode: shortCodeMap[p.etiqueta] || '?' // Añadir código corto
+                        }));
                 });
 
-                const resultadoCorte = computed(() => { /* SIN CAMBIOS en la lógica, solo quizás console.log */
-                    const piezas = piezasCalculadas.value; const sh = parseFloat(sheetHeight.value);
-                    const sw = parseFloat(sheetWidth.value); const price = parseFloat(boardPrice.value);
+                const resultadoCorte = computed(() => { /* Modificado para pasar shortCode y mapearlo */
+                    const piezas = piezasCalculadas.value; // Ahora tienen shortCode
+                    const sh = parseFloat(sheetHeight.value); const sw = parseFloat(sheetWidth.value); const price = parseFloat(boardPrice.value);
                     const defaultResult = { count: 0, totalPrice: 0, boardData: [], error: null };
-                    // Validaciones ...
-                    if (!piezas || piezas.length === 0 || piezas[0].etiqueta === 'Error') { defaultResult.error="..."; return defaultResult; }
-                    if (isNaN(sh) || isNaN(sw) || sh <= 0 || sw <= 0) { defaultResult.error="..."; return defaultResult; }
-                    if (isNaN(price) || price < 0) { defaultResult.error="..."; return defaultResult; }
+                    // ... validaciones ...
+                     if (!piezas || piezas.length === 0 || piezas[0].etiqueta === 'Error') { defaultResult.error="..."; return defaultResult; }
+                     if (isNaN(sh) || isNaN(sw) || sh <= 0 || sw <= 0) { defaultResult.error="..."; return defaultResult; }
+                     if (isNaN(price) || price < 0) { defaultResult.error="..."; return defaultResult; }
 
                     try {
-                        // console.log("Llamando a fitPiezasEnTablas con:", piezas, sw, sh); // DEBUG
-                        const hojasCalculadas = fitPiezasEnTablas(piezas, sw, sh);
-                        // console.log("Resultado de fitPiezasEnTablas:", JSON.stringify(hojasCalculadas, null, 2)); // DEBUG detallado
-
+                        const hojasCalculadas = fitPiezasEnTablas(piezas, sw, sh); // Le pasamos piezas con shortCode
                         const numSheets = hojasCalculadas.length; const totalPrice = numSheets * price;
+
                         const boardData = hojasCalculadas.map(hoja => ({
                             id: hoja.id,
-                            pieces: hoja.ocupados.map(p => ({ // Mapeo igual
-                                id: p.id, etiqueta: p.etiqueta, color: p.color,
+                            // 'ocupados' ahora también tiene 'shortCode' gracias a la modificación en fitPiezasEnTablas
+                            pieces: hoja.ocupados.map(p => ({
+                                id: p.id, etiqueta: p.etiqueta, color: p.color, shortCode: p.shortCode, // <-- Mapear shortCode
                                 originalDim1: p.originalDim1, originalDim2: p.originalDim2,
                                 x: p.x, y: p.y, w: p.w, h: p.h
                             }))
                         }));
-                        // console.log("BoardData para template:", JSON.stringify(boardData, null, 2)); // DEBUG final
-
                         return { count: numSheets, totalPrice: totalPrice, boardData: boardData, error: null };
-                    } catch (error) {
-                        console.error("Error packing:", error);
-                        defaultResult.error = error.message || "Error en cálculo de corte.";
-                        return defaultResult;
-                    }
+                    } catch (error) { /* ... manejo error ... */
+                         console.error("Error packing:", error);
+                         defaultResult.error = error.message || "Error en cálculo de corte.";
+                         return defaultResult;
+                     }
                 });
 
-                // --- Métodos para el Template (NUEVO para simplificar estilos) ---
-                const getPieceStyle = (piece, currentSheetW, currentSheetH) => {
-                    // Asegurarse de que las dimensiones de la hoja no sean cero para evitar división por cero
-                    const safeSheetW = currentSheetW > 0 ? currentSheetW : 1;
-                    const safeSheetH = currentSheetH > 0 ? currentSheetH : 1;
-                    return {
-                        position: 'absolute',
-                        left: (piece.x / safeSheetW) * 100 + '%',
-                        top: (piece.y / safeSheetH) * 100 + '%',
-                        width: (piece.w / safeSheetW) * 100 + '%',
-                        height: (piece.h / safeSheetH) * 100 + '%',
-                        backgroundColor: piece.color
-                    };
-                };
-
-                const getPieceTooltip = (piece) => {
-                    // Usar \n para saltos de línea en el tooltip
-                    return `${piece.etiqueta} (${formatDecimal(piece.originalDim1)}x${formatDecimal(piece.originalDim2)})
-Pos: (${piece.x.toFixed(1)}, ${piece.y.toFixed(1)})
-Dim Colocada: ${piece.w.toFixed(1)}x${piece.h.toFixed(1)}
-ID: ${piece.id}`;
-                };
+                // --- Métodos para el Template ---
+                const getPieceStyle = (piece, currentSheetW, currentSheetH) => { /* SIN CAMBIOS */
+                     const safeSheetW = currentSheetW > 0 ? currentSheetW : 1; const safeSheetH = currentSheetH > 0 ? currentSheetH : 1;
+                     return { position: 'absolute', left: (piece.x/safeSheetW)*100+'%', top: (piece.y/safeSheetH)*100+'%', width: (piece.w/safeSheetW)*100+'%', height: (piece.h/safeSheetH)*100+'%', backgroundColor: piece.color };
+                 };
+                const getPieceTooltip = (piece) => { /* SIN CAMBIOS */
+                     return `${piece.etiqueta} (${formatDecimal(piece.originalDim1)}x${formatDecimal(piece.originalDim2)})\nPos: (${piece.x.toFixed(1)}, ${piece.y.toFixed(1)})\nDim Colocada: ${piece.w.toFixed(1)}x${piece.h.toFixed(1)}\nID: ${piece.id}`;
+                 };
 
                 // --- Exponer al Template ---
                 return {
                     largo, ancho, alto, espesor, sheetHeight, sheetWidth, boardPrice,
-                    currentDateTime, // Exponer fecha/hora actualizada
-                    piezasCalculadas,
-                    resultadoCorte,
-                    formatDecimal,
-                    formatCurrency,
-                    getPieceStyle, // Exponer nuevo método
-                    getPieceTooltip, // Exponer nuevo método
-                    // Exponer sheetWidth/Height directamente si se usan en el :style del contenedor
-                    // O pasarlos como argumento a getPieceStyle como se hizo.
-                    // Para el aspect-ratio del contenedor, necesitamos acceso directo:
-                    currentSheetWidth: sheetWidth,
-                    currentSheetHeight: sheetHeight
+                    currentDateTime, piezasCalculadas, resultadoCorte,
+                    formatDecimal, formatCurrency, getPieceStyle, getPieceTooltip,
+                    currentSheetWidth: sheetWidth, currentSheetHeight: sheetHeight
                 };
             }
         }).mount('#app');
