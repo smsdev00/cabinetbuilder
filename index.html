@@ -136,7 +136,36 @@
                          </div>
                      </div>
                  </div>
+                 
+          
+                 
                  <div v-else-if="!resultadoCorte.error && piezasCalculadas.length > 0 && piezasCalculadas[0].etiqueta !== 'Error'" class="text-center text-muted fst-italic">No se generaron planos de corte. Verifique dimensiones/errores.</div>
+
+                 <div class="construction-note mt-4"> <p class="mb-1 fw-bold">Notas Adicionales y Recomendaciones:</p>
+                    <ul class="mb-0" style="padding-left: 1.2em;">
+                        <li>
+                            <strong>Ensamblado:</strong> Para facilitar la unión de las piezas, se recomienda presentarlas y sujetarlas firmemente utilizando sargentos, prensas escuadra o prensas rápidas antes de atornillar.
+                        </li>
+                        <li>
+                            <strong>Atornillado:</strong> Antes de introducir los tornillos, realice siempre una perforación guía con una broca de diámetro ligeramente inferior al núcleo del tornillo (usualmente entre 1mm y 2mm para tornillos de aglomerado comunes). Esto previene que el MDF se raje y asegura una unión más prolija y resistente.
+                        </li>
+                        <li>
+                            <strong>Servicio de Corte:</strong> Consulte en su proveedor de placas de MDF (como Sodimac, Easy, u otros centros especializados en madera aquí en Argentina) si ofrecen servicio de corte de las placas. Frecuentemente, este servicio puede ser gratuito para un número limitado de cortes rectos o tener un costo asociado. ¡Averiguar esto puede ahorrarle mucho trabajo y garantizar cortes precisos!
+                        </li>
+                        <li>
+                            <strong>Verificación Final:</strong> <strong class="text-danger">¡Fundamental!</strong> Esta calculadora ofrece una estimación del despiece y los planos de corte. Antes de comprar el material o mandar a cortar, siempre verifique y compare las medidas generadas con sus propios planos o realice una comprobación manual (por ejemplo, en una hoja de cálculo). Un doble chequeo evita errores costosos.
+                        </li>
+                        <li>
+                            <strong>Lijado para Acabado Fino:</strong> Para obtener una superficie muy suave, especialmente en los cantos (que son más porosos), aplique primero una capa de sellador/imprimación y luego lije suavemente. Se recomienda un lijado progresivo, idealmente con lijas al agua para minimizar el polvo: comience con un grano medio-fino (ej. 220 o 240) para nivelar, continúe con uno fino (ej. 360 o 400) entre capas de pintura, y si busca un acabado extra liso, puede finalizar con uno muy fino (ej. 600 u 800).
+                        </li>
+                        <li>
+                            <strong>Pintura Recomendada:</strong> Para maximizar la reflexión de la luz (ideal para interiores o fondos de muebles), la pintura blanca es una excelente opción. Se recomienda usar esmalte sintético (base aguarrás, acabado brillante o satinado) por su durabilidad, o esmaltes acrílicos/látex al agua específicos para madera/MDF (acabado satinado o mate) si prefiere menor olor y limpieza con agua. <strong class="text-info">¡Siempre aplique una base!</strong> Use un sellador o imprimación adecuada para MDF antes de la pintura de acabado. Esto sella los poros, reduce el consumo de pintura y garantiza un color y brillo uniformes.
+                        </li>
+                        <li>
+                            <strong>Descargo de Responsabilidad (IA):</strong> Esta calculadora fue desarrollada con fuerte asistencia de Inteligencia Artificial (IA - Google Gemini) y se presenta como una <strong>prueba de concepto (POC)</strong> y herramienta educativa/estimativa. Los cálculos, despieces y planos de corte generados son aproximaciones y pueden contener errores o no ser óptimos para todos los casos. <strong class="text-danger">NO debe utilizarse como un plano de corte definitivo y profesional sin una validación y ajuste manual exhaustivo por parte del usuario.</strong> El uso de los resultados de esta herramienta es bajo su única y exclusiva responsabilidad.
+                        </li>
+                    </ul>
+                </div>
             </div>
         </div>
 
