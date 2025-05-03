@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora de Mueble - Plano de Corte v1.3 (Puertas)</title> <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <title>Calculadora de Mueble - Plano de Corte v1.4 (Puertas + 3D)</title> <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <style>
+        /* --- Estilos existentes --- */
         #app {
             max-width: 1100px;
         }
@@ -27,7 +28,6 @@
             border-left: 4px solid #0d6efd;
             margin-bottom: 1.5rem;
         }
-        /* --- Estilos Plano de Corte --- */
         .sheet-layout-container {
             position: relative;
             border: 2px solid #343a40;
@@ -56,44 +56,71 @@
             line-height: 1;
             user-select: none;
         }
-         .board-header {
+        .board-header {
             font-weight: bold;
             margin-bottom: 5px;
             text-align: center;
-         }
-         .piece-tooltip-content {
+        }
+        .piece-tooltip-content {
             white-space: pre;
-         }
+        }
+
+        /* --- NUEVOS Estilos para el Visor 3D --- */
+        #renderer-container {
+            position: relative; /* Necesario para posicionar mensajes */
+            width: 100%;
+            height: 400px; /* Altura fija o aspect-ratio */
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+            margin-top: 1.5rem;
+            margin-bottom: 1.5rem;
+            border-radius: 5px;
+            overflow: hidden; /* Para bordes redondeados */
+        }
+        #renderer-container canvas {
+             display: block; /* Evita espacio extra debajo del canvas */
+             width: 100% !important;
+             height: 100% !important;
+        }
+        .renderer-placeholder {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #999;
+            font-style: italic;
+            text-align: center;
+        }
 
     </style>
 </head>
 <body>
     <div id="app" class="container mt-4 mb-5">
-        <h1 class="mb-4 text-center">Calculadora de Mueble - Plano de Corte Estimado v1.3 (Puertas)</h1>
-
-        <div class="row">
+        <h1 class="mb-4 text-center">Calculadora de Mueble - Plano de Corte Estimado v1.4 (Puertas + 3D)</h1> <div class="row">
              <div class="col-lg-6">
                  <div class="card shadow-sm h-100">
                      <div class="card-header">1. Dimensiones del Mueble y Material</div>
-                     <div class="card-body"><div class="row g-3">
-                         <div class="col-md-6"><label for="largo" class="form-label">Largo Base (cm):</label><input type="number" id="largo" class="form-control" v-model.number="largo" min="1"></div>
-                         <div class="col-md-6"><label for="ancho" class="form-label">Ancho Base (cm):</label><input type="number" id="ancho" class="form-control" v-model.number="ancho" min="1"></div>
-                         <div class="col-md-6"><label for="alto" class="form-label">Alto Total (cm):</label><input type="number" id="alto" class="form-control" v-model.number="alto" min="1"></div>
-                         <div class="col-md-6"><label for="espesor" class="form-label">Espesor Material (mm):</label><input type="number" id="espesor" class="form-control" v-model.number="espesor" min="1" step="0.1"></div>
+                     <div class="card-body">
+                         <div class="row g-3">
+                             <div class="col-md-6"><label for="largo" class="form-label">Largo Base (cm):</label><input type="number" id="largo" class="form-control" v-model.number="largo" min="1"></div>
+                             <div class="col-md-6"><label for="ancho" class="form-label">Ancho Base (cm):</label><input type="number" id="ancho" class="form-control" v-model.number="ancho" min="1"></div>
+                             <div class="col-md-6"><label for="alto" class="form-label">Alto Total (cm):</label><input type="number" id="alto" class="form-control" v-model.number="alto" min="1"></div>
+                             <div class="col-md-6"><label for="espesor" class="form-label">Espesor Material (mm):</label><input type="number" id="espesor" class="form-control" v-model.number="espesor" min="1" step="0.1"></div>
+                         </div>
                      </div>
                  </div>
-             </div>
              </div>
              <div class="col-lg-6">
                  <div class="card shadow-sm h-100">
                      <div class="card-header">2. Datos de la Tabla de MDF</div>
-                     <div class="card-body"><div class="row g-3">
-                         <div class="col-md-6"><label for="sheetHeight" class="form-label">Alto Tabla (cm):</label><input type="number" id="sheetHeight" class="form-control" v-model.number="sheetHeight" min="1"></div>
-                         <div class="col-md-6"><label for="sheetWidth" class="form-label">Ancho Tabla (cm):</label><input type="number" id="sheetWidth" class="form-control" v-model.number="sheetWidth" min="1"></div>
-                         <div class="col-12"><label for="boardPrice" class="form-label">Precio por Tabla ($):</label><input type="number" id="boardPrice" class="form-control" v-model.number="boardPrice" min="0" step="any"></div>
+                     <div class="card-body">
+                         <div class="row g-3">
+                             <div class="col-md-6"><label for="sheetHeight" class="form-label">Alto Tabla (cm):</label><input type="number" id="sheetHeight" class="form-control" v-model.number="sheetHeight" min="1"></div>
+                             <div class="col-md-6"><label for="sheetWidth" class="form-label">Ancho Tabla (cm):</label><input type="number" id="sheetWidth" class="form-control" v-model.number="sheetWidth" min="1"></div>
+                             <div class="col-12"><label for="boardPrice" class="form-label">Precio por Tabla ($):</label><input type="number" id="boardPrice" class="form-control" v-model.number="boardPrice" min="0" step="any"></div>
+                         </div>
                      </div>
                  </div>
-             </div>
              </div>
         </div>
 
@@ -103,43 +130,50 @@
             </div>
             <div class="card-body">
                 <div class="text-center mb-4 p-3 bg-light rounded border">
-                    <span class="resultado-tablas">Tablas MDF: {{ resultadoCorte.count >= 0 ? resultadoCorte.count : 'N/A' }}</span>
-                    <span class="resultado-precio">Costo Total: {{ formatCurrency(resultadoCorte.totalPrice) }}</span>
-                    <p v-if="resultadoCorte.count > 0 && !resultadoCorte.error" class="text-muted small mt-2 mb-0">Estimación con packer simplificado. El layout real y costo pueden variar.</p>
-                    <p v-if="resultadoCorte.error" class="text-danger small mt-2 mb-0"><strong>Error:</strong> {{ resultadoCorte.error }}</p>
-                </div>
+                     <span class="resultado-tablas">Tablas MDF: {{ resultadoCorte.count >= 0 ? resultadoCorte.count : 'N/A' }}</span>
+                     <span class="resultado-precio">Costo Total: {{ formatCurrency(resultadoCorte.totalPrice) }}</span>
+                     <p v-if="resultadoCorte.count > 0 && !resultadoCorte.error" class="text-muted small mt-2 mb-0">Estimación con packer simplificado. El layout real y costo pueden variar.</p>
+                     <p v-if="resultadoCorte.error" class="text-danger small mt-2 mb-0"><strong>Error:</strong> {{ resultadoCorte.error }}</p>
+                 </div>
+                 <div class="construction-note">
+                     <p class="mb-1 fw-bold">Método de Construcción Asumido (para despiece y 3D):</p>
+                     <ul class="mb-0" style="padding-left: 1.2em;">
+                         <li>Laterales (L): Tienen Alto (H) y Ancho (A - profundidad) total.</li>
+                         <li>Base (B) / Tapa (T): Tienen Largo (L) y Ancho (A - profundidad) total externo.</li>
+                         <li>Puertas (P - x2): Tienen Alto (H) total, ancho calculado para dejar luz, encajan <strong>entre</strong> los laterales (Ancho útil = L - 2*Espesor).</li>
+                         <li>Trasera (R): Tiene Alto (H) total, encaja <strong>entre</strong> los laterales (Ancho = L - 2*Espesor).</li>
+                     </ul>
+                 </div>
 
-                <div class="construction-note">
-                    <p class="mb-1 fw-bold">Método de Construcción Asumido:</p>
-                    <ul class="mb-0" style="padding-left: 1.2em;">
-                        <li>Laterales (L): Cubren Alto y Ancho (profundidad) total.</li>
-                        <li>Base (B) / Tapa (T): Cubren Largo y Ancho (profundidad) total externo.</li>
-                        <li>Puertas (P - x2): Tienen Alto total, ancho calculado para dejar una luz de {{ LUZ_ENTRE_PUERTAS_CM }} cm entre ellas, y encajan <strong>entre</strong> los laterales (Ancho total = Largo - 2*Espesor).</li>
-                        <li>Trasera (R): Tiene Alto total, pero encaja <strong>entre</strong> los laterales (Ancho = Largo - 2*Espesor).</li>
-                    </ul>
+                <h3 class="fs-5 mt-4 mb-3 text-center">Visualización 3D Estimada</h3>
+                <div id="renderer-container" ref="rendererContainer">
+                    <div v-if="!isRendererReady" class="renderer-placeholder">Cargando visor 3D...</div>
+                    <div v-if="isRendererReady && renderError" class="renderer-placeholder text-danger">Error al generar 3D: {{ renderError }}</div>
                 </div>
 
                 <h3 class="fs-5 mt-4 mb-3 text-center">Despiece Detallado del Mueble</h3>
                  <div class="table-responsive mb-4">
-                     <table class="table table-striped table-bordered table-hover table-sm">
-                         <thead class="table-dark"><tr><th>Etiqueta</th><th>Cód.</th><th>Cantidad</th><th>Medida 1 (cm)</th><th>Medida 2 (cm)</th><th>Color Ref.</th><th>Notas</th></tr></thead>
-                         <tbody>
-                             <tr v-if="piezasCalculadas.length === 0 || piezasCalculadas[0].etiqueta === 'Error'"><td colspan="7" class="text-center fst-italic">{{ piezasCalculadas.length > 0 ? piezasCalculadas[0].dim1 : 'Ingrese dimensiones válidas.' }}</td></tr>
-                             <tr v-else v-for="pieza in piezasCalculadas" :key="pieza.etiqueta + pieza.dim1 + pieza.dim2"> <td :style="{borderLeft: `5px solid ${pieza.color}`}">{{ pieza.etiqueta }}</td>
-                                 <td class="fw-bold">{{ pieza.shortCode }}</td> <td>{{ pieza.cantidad }}</td>
-                                 <td>{{ formatDecimal(pieza.dim1) }}</td>
-                                 <td>{{ formatDecimal(pieza.dim2) }}</td>
-                                 <td><span :style="{ backgroundColor: pieza.color, padding: '2px 8px', borderRadius: '3px' }">&nbsp;</span></td>
-                                 <td>{{ pieza.nota || '-' }}</td>
-                             </tr>
-                         </tbody>
-                     </table>
+                    <table class="table table-striped table-bordered table-hover table-sm">
+                        <thead class="table-dark"><tr><th>Etiqueta</th><th>Cód.</th><th>Cantidad</th><th>Medida 1 (cm)</th><th>Medida 2 (cm)</th><th>Color Ref.</th><th>Notas</th></tr></thead>
+                        <tbody>
+                            <tr v-if="piezasCalculadas.length === 0 || piezasCalculadas[0].etiqueta === 'Error'"><td colspan="7" class="text-center fst-italic">{{ piezasCalculadas.length > 0 ? piezasCalculadas[0].dim1 : 'Ingrese dimensiones válidas.' }}</td></tr>
+                            <tr v-else v-for="pieza in piezasCalculadas" :key="pieza.etiqueta + pieza.dim1 + pieza.dim2">
+                                <td :style="{borderLeft: `5px solid ${pieza.color}`}">{{ pieza.etiqueta }}</td>
+                                <td class="fw-bold">{{ pieza.shortCode }}</td>
+                                <td>{{ pieza.cantidad }}</td>
+                                <td>{{ formatDecimal(pieza.dim1) }}</td>
+                                <td>{{ formatDecimal(pieza.dim2) }}</td>
+                                <td><span :style="{ backgroundColor: pieza.color, padding: '2px 8px', borderRadius: '3px' }">&nbsp;</span></td>
+                                <td>{{ pieza.nota || '-' }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
                  </div>
 
-                 <h3 class="fs-4 mt-5 mb-4 text-center">Planos de Corte Estimados</h3>
-                  <p v-if="resultadoCorte.count > 0 && !resultadoCorte.error" class="text-center text-muted small mb-4">
-                      Representación visual basada en el packer simplificado. NO considera ancho de corte (kerf).
-                  </p>
+                <h3 class="fs-4 mt-5 mb-4 text-center">Planos de Corte Estimados</h3>
+                 <p v-if="resultadoCorte.count > 0 && !resultadoCorte.error" class="text-center text-muted small mb-4">
+                     Representación visual basada en el packer simplificado. NO considera ancho de corte (kerf).
+                 </p>
                  <div v-if="resultadoCorte.boardData && resultadoCorte.boardData.length > 0 && !resultadoCorte.error" class="row">
                      <div v-for="board in resultadoCorte.boardData" :key="board.id" class="col-lg-6 mb-4">
                          <div class="board-header">Tabla #{{ board.id }}</div>
@@ -150,238 +184,517 @@
                                   class="placed-piece"
                                   :style="getPieceStyle(piece, currentSheetWidth, currentSheetHeight)"
                                   :title="getPieceTooltip(piece)">
-                                 {{ piece.shortCode }} </div>
+                                 {{ piece.shortCode }}
+                             </div>
                          </div>
                      </div>
                  </div>
                  <div v-else-if="!resultadoCorte.error && piezasCalculadas.length > 0 && piezasCalculadas[0].etiqueta !== 'Error'" class="text-center text-muted fst-italic">
                     No se generaron planos de corte. Verifique dimensiones/errores.
                  </div>
-                 </div>
-        </div> <p class="text-center text-muted mt-4 small">
+            </div>
+        </div>
+
+        <p class="text-center text-muted mt-4 small">
              {{ currentDateTime }}
          </p>
-    </div> <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+    </div>
+
+    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 
-    <script>
-        const { createApp, ref, computed } = Vue;
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" integrity="sha512-dLxUelApnYxpLt6K2iomGngnHO83iUvZytA3YjDUCjT0HDkz5vzFTTLRh_kW4ZBUP7btHCWWPd0zZoXzSCJR9A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.module.min.js",
+                "three/addons/": "https://unpkg.com/three@0.128.0/examples/jsm/"
+            }
+        }
+    </script>
+    <script type="module">
+        // Import OrbitControls via import map
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+        const { createApp, ref, computed, onMounted, onBeforeUnmount, watch, nextTick, markRaw } = Vue;
 
         createApp({
             setup() {
-                // --- Estado Reactivo ---
-                const largo = ref(80); const ancho = ref(80); const alto = ref(160);
-                const espesor = ref(9); const sheetHeight = ref(260); const sheetWidth = ref(183);
-                const boardPrice = ref(25000); const currentDateTime = ref('');
+                // --- Estado Reactivo (Existente) ---
+                const largo = ref(80);
+                const ancho = ref(40); // Cambiado para que no sea un cubo perfecto
+                const alto = ref(60);  // Cambiado para que no sea un cubo perfecto
+                const espesor = ref(18); // Espesor más común en mm
+                const sheetHeight = ref(260);
+                const sheetWidth = ref(183);
+                const boardPrice = ref(25000);
+                const currentDateTime = ref('');
+                const LUZ_ENTRE_PUERTAS_CM = ref(0.3);
 
-                // --- CONSTANTE LUZ ---
-                const LUZ_ENTRE_PUERTAS_CM = ref(0.3); // 3mm de luz entre puertas
+                // --- NUEVO: Estado para 3D ---
+                const rendererContainer = ref(null); // Ref para el div contenedor del canvas
+                const scene = ref(null);
+                const camera = ref(null);
+                const renderer = ref(null);
+                const controls = ref(null);
+                const furnitureGroup = ref(null); // Grupo para contener las piezas del mueble
+                const isRendererReady = ref(false);
+                const renderError = ref(null); // Para mostrar errores específicos del 3D
+                let animationFrameId = null; // Para cancelar el loop de animación
 
-                const updateDateTime = () => {
-                     currentDateTime.value = new Date().toLocaleString('es-AR', { timeZone: 'America/Argentina/Buenos_Aires', dateStyle: 'long', timeStyle: 'medium' });
-                 };
-                 updateDateTime(); // Inicializar
-                 setInterval(updateDateTime, 60000); // Actualizar cada minuto
-
-
-                // --- Mapeos (Añadido Puerta) ---
+                // --- Mapeos (Existente) ---
                 const colorMap = {
                     'Base': '#dc3545', 'Tapa': '#fd7e14', 'Lateral': '#ffc107',
-                    'Puerta': '#6f42c1', // Nuevo color para Puerta
-                    'Trasera': '#0d6efd', 'Error': '#6c757d'
-                 };
+                    'Puerta': '#6f42c1', 'Trasera': '#0d6efd', 'Error': '#6c757d'
+                };
                 const shortCodeMap = {
                     'Base': 'B', 'Tapa': 'T', 'Lateral': 'L',
-                    'Puerta': 'P', // Nuevo código para Puerta
-                    'Trasera': 'R', 'Error': 'ERR'
-                 };
+                    'Puerta': 'P', 'Trasera': 'R', 'Error': 'ERR'
+                };
 
-                // --- Funciones Auxiliares ---
+                // --- Funciones Auxiliares (Existente) ---
                 const formatDecimal = (value) => typeof value === 'number' ? value.toFixed(1) : value;
                 const formatCurrency = (value) => {
-                     if (typeof value !== 'number' || isNaN(value)) return '$ --.--';
-                     return `$ ${value.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-                 };
+                    if (typeof value !== 'number' || isNaN(value)) return '$ --.--';
+                    return `$ ${value.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                };
+                const updateDateTime = () => {
+                    currentDateTime.value = new Date().toLocaleString('es-AR', { timeZone: 'America/Argentina/Buenos_Aires', dateStyle: 'long', timeStyle: 'medium' });
+                };
+                updateDateTime();
+                setInterval(updateDateTime, 60000);
 
-                 // --- Función de Packing (Sin cambios lógicos, sólo recibe piezas con shortCode) ---
-                 function fitPiezasEnTablas(piezasInput, sheetWidth, sheetHeight) {
-                    const hojas = []; let globalPieceIdCounter = 1;
-                    function crearHoja(id){ return { id: id, ocupados: [], espacios: [{ x: 0, y: 0, w: sheetWidth, h: sheetHeight }] }; }
-                    function puedeColocar(pw, ph, sp){ const cn=pw<=sp.w&&ph<=sp.h; const cr=ph<=sp.w&&pw<=sp.h; return {cabe:cn||cr, necesitaRotar:!cn&&cr}; }
-                    function colocarPiezaEnHoja(hoja, pOrig){
-                        let mejorIdx=-1, rotar=false;
-                        for(let i=0; i<hoja.espacios.length; i++){ const sp=hoja.espacios[i]; const {cabe,necesitaRotar}=puedeColocar(pOrig.w,pOrig.h,sp); if(cabe){mejorIdx=i; rotar=necesitaRotar; break;}}
-                        if(mejorIdx!==-1){
-                            const sp=hoja.espacios[mejorIdx]; const rt=rotar; const w=rt?pOrig.h:pOrig.w; const h=rt?pOrig.w:pOrig.h;
-                            hoja.ocupados.push({
-                                id: pOrig.id, x: sp.x, y: sp.y, w: w, h: h,
-                                etiqueta: pOrig.etiqueta, color: pOrig.color, shortCode: pOrig.shortCode, // Pasa shortCode
-                                originalDim1: pOrig.originalDim1, originalDim2: pOrig.originalDim2
-                            });
-                            hoja.espacios.splice(mejorIdx,1);
-                            // Ajuste mínimo para evitar micro espacios (0.1 en vez de 0)
-                            if(sp.w-w > 0.1) hoja.espacios.push({x:sp.x+w, y:sp.y, w:sp.w-w, h:h}); // Altura de la pieza colocada, no sp.h
-                            if(sp.h-h > 0.1) hoja.espacios.push({x:sp.x, y:sp.y+h, w:sp.w, h:sp.h-h}); // Ancho total del espacio original
-                           // Ordenar espacios para potencialmente mejorar la elección (opcional, aquí simple)
-                           // hoja.espacios.sort((a, b) => a.y - b.y || a.x - b.x); // Ordenar por y, luego x
-                            return true;
-                        } return false;
-                    }
-                    let todas=[];
-                    for(const pIn of piezasInput){
-                        const pw=pIn.dim1; const ph=pIn.dim2;
-                        if(!((pw<=sheetHeight&&ph<=sheetWidth)||(pw<=sheetWidth&&ph<=sheetHeight))) throw new Error(`Pieza ${pIn.etiqueta} (${formatDecimal(pw)}x${formatDecimal(ph)}) no cabe en la tabla.`);
-                        for(let i=0; i<pIn.cantidad; i++) todas.push({
-                            id:globalPieceIdCounter++, w:pw, h:ph, area:pw*ph,
-                            etiqueta:pIn.etiqueta, color:pIn.color, shortCode: pIn.shortCode, // Asegurar shortCode
-                            originalDim1:pw, originalDim2:ph
-                        });
-                    }
-                    todas.sort((a,b) => Math.max(b.w, b.h) - Math.max(a.w, a.h) || b.area - a.area); // Ordenar por dimensión mayor, luego área
+                // --- Función de Packing (Existente - Sin cambios lógicos) ---
+                function fitPiezasEnTablas(piezasInput, sheetWidth, sheetHeight) {
+                     const hojas = []; let globalPieceIdCounter = 1;
+                     function crearHoja(id){ return { id: id, ocupados: [], espacios: [{ x: 0, y: 0, w: sheetWidth, h: sheetHeight }] }; }
+                     function puedeColocar(pw, ph, sp){ const cn=pw<=sp.w&&ph<=sp.h; const cr=ph<=sp.w&&pw<=sp.h; return {cabe:cn||cr, necesitaRotar:!cn&&cr}; }
+                     function colocarPiezaEnHoja(hoja, pOrig){
+                         let mejorIdx=-1, rotar=false;
+                         for(let i=0; i<hoja.espacios.length; i++){ const sp=hoja.espacios[i]; const {cabe,necesitaRotar}=puedeColocar(pOrig.w,pOrig.h,sp); if(cabe){mejorIdx=i; rotar=necesitaRotar; break;}}
+                         if(mejorIdx!==-1){
+                             const sp=hoja.espacios[mejorIdx]; const rt=rotar; const w=rt?pOrig.h:pOrig.w; const h=rt?pOrig.w:pOrig.h;
+                             hoja.ocupados.push({
+                                 id: pOrig.id, x: sp.x, y: sp.y, w: w, h: h,
+                                 etiqueta: pOrig.etiqueta, color: pOrig.color, shortCode: pOrig.shortCode,
+                                 originalDim1: pOrig.originalDim1, originalDim2: pOrig.originalDim2
+                             });
+                             hoja.espacios.splice(mejorIdx,1);
+                             if(sp.w-w > 0.1) hoja.espacios.push({x:sp.x+w, y:sp.y, w:sp.w-w, h:h});
+                             if(sp.h-h > 0.1) hoja.espacios.push({x:sp.x, y:sp.y+h, w:sp.w, h:sp.h-h});
+                             return true;
+                         } return false;
+                     }
+                     let todas=[];
+                     for(const pIn of piezasInput){
+                         const pw=pIn.dim1; const ph=pIn.dim2;
+                         if(!((pw<=sheetHeight&&ph<=sheetWidth)||(pw<=sheetWidth&&ph<=sheetHeight))) throw new Error(`Pieza ${pIn.etiqueta} (${formatDecimal(pw)}x${formatDecimal(ph)}) no cabe en la tabla.`);
+                         for(let i=0; i<pIn.cantidad; i++) todas.push({
+                             id:globalPieceIdCounter++, w:pw, h:ph, area:pw*ph,
+                             etiqueta:pIn.etiqueta, color:pIn.color, shortCode: pIn.shortCode,
+                             originalDim1:pw, originalDim2:ph
+                         });
+                     }
+                     todas.sort((a,b) => Math.max(b.w, b.h) - Math.max(a.w, a.h) || b.area - a.area);
+                     for(const p of todas){
+                         let colocada=false;
+                         for(const h of hojas){if(colocarPiezaEnHoja(h,p)){colocada=true; break;}}
+                         if(!colocada){
+                             const nH=crearHoja(hojas.length+1);
+                             if(colocarPiezaEnHoja(nH,p)) {
+                                 hojas.push(nH);
+                             } else {
+                                 throw new Error(`Error crítico: No se pudo colocar la pieza ${p.etiqueta} (${formatDecimal(p.w)}x${formatDecimal(p.h)}) en una hoja nueva vacía.`);
+                             }
+                         }
+                     }
+                     return hojas;
+                 }
 
-                    for(const p of todas){
-                        let colocada=false;
-                        for(const h of hojas){if(colocarPiezaEnHoja(h,p)){colocada=true; break;}}
-                        if(!colocada){
-                            const nH=crearHoja(hojas.length+1);
-                            if(colocarPiezaEnHoja(nH,p)) {
-                                hojas.push(nH);
-                            } else {
-                                // Este error no debería ocurrir si la validación inicial pasó, pero por si acaso
-                                throw new Error(`Error crítico: No se pudo colocar la pieza ${p.etiqueta} (${formatDecimal(p.w)}x${formatDecimal(p.h)}) en una hoja nueva vacía.`);
-                            }
-                        }
-                    }
-                    return hojas;
-                }
-
-
-                // --- Propiedades Calculadas (MODIFICADO para Puertas) ---
+                // --- Propiedades Calculadas (Existente - MODIFICADO para Puertas) ---
                 const piezasCalculadas = computed(() => {
                     const L = parseFloat(largo.value); const A = parseFloat(ancho.value);
                     const H = parseFloat(alto.value); const E_mm = parseFloat(espesor.value);
-                    const luz = parseFloat(LUZ_ENTRE_PUERTAS_CM.value); // Obtener valor de la luz
+                    const luz = parseFloat(LUZ_ENTRE_PUERTAS_CM.value);
 
-                    // Validaciones iniciales
                     if (isNaN(L) || isNaN(A) || isNaN(H) || isNaN(E_mm) || L <= 0 || A <= 0 || H <= 0 || E_mm <= 0 || isNaN(luz) || luz < 0) {
-                        return []; // No calcular si hay datos inválidos
+                        return [];
                     }
-
                     const E_cm = E_mm / 10;
 
-                    // Validación de espacio mínimo para estructura
-                    if (L <= 2 * E_cm) {
-                        return [{ etiqueta: 'Error', cantidad: '-', dim1: 'Largo insuficiente para estructura', dim2: '-', nota: 'Ajuste medidas', color: colorMap['Error'], shortCode: shortCodeMap['Error'] }];
-                    }
-                     if (H <= 2 * E_cm) { // Asumiendo que tapa y base van por fuera del alto
-                         return [{ etiqueta: 'Error', cantidad: '-', dim1: 'Alto insuficiente para estructura', dim2: '-', nota: 'Ajuste medidas', color: colorMap['Error'], shortCode: shortCodeMap['Error'] }];
-                     }
+                    if (L <= 2 * E_cm) return [{ etiqueta: 'Error', cantidad: '-', dim1: 'Largo insuficiente para estructura', dim2: '-', nota: 'Ajuste medidas', color: colorMap['Error'], shortCode: shortCodeMap['Error'] }];
+                    if (H <= 2 * E_cm) return [{ etiqueta: 'Error', cantidad: '-', dim1: 'Alto insuficiente para estructura', dim2: '-', nota: 'Ajuste medidas', color: colorMap['Error'], shortCode: shortCodeMap['Error'] }];
 
-                    // --- CALCULO ANCHO PUERTAS ---
                     const anchoTotalFrente = L - (2 * E_cm);
                     const anchoDisponibleParaPuertas = anchoTotalFrente - luz;
                     const anchoPuerta = anchoDisponibleParaPuertas / 2;
 
-                    // Validación ancho puerta
-                    if (anchoPuerta <= 0.1) { // Usar un umbral pequeño
-                         return [{ etiqueta: 'Error', cantidad: '-', dim1: 'Ancho insuficiente para puertas + luz', dim2: '-', nota: 'Ajuste Largo o Espesor', color: colorMap['Error'], shortCode: shortCodeMap['Error'] }];
-                    }
+                    if (anchoPuerta <= 0.1) return [{ etiqueta: 'Error', cantidad: '-', dim1: 'Ancho insuficiente para puertas + luz', dim2: '-', nota: 'Ajuste Largo o Espesor', color: colorMap['Error'], shortCode: shortCodeMap['Error'] }];
 
                     const piezasBase = [
                         { etiqueta: 'Base', cantidad: 1, dim1: L, dim2: A, nota: 'Pieza inferior' },
                         { etiqueta: 'Tapa', cantidad: 1, dim1: L, dim2: A, nota: 'Pieza superior' },
                         { etiqueta: 'Lateral', cantidad: 2, dim1: H, dim2: A, nota: 'Caras laterales' },
-                        // --- Piezas de Puerta (reemplaza Frente) ---
                         { etiqueta: 'Puerta', cantidad: 2, dim1: H, dim2: anchoPuerta, nota: `Frontal (${formatDecimal(luz)}cm luz)` },
-                        // --- Trasera ---
                         { etiqueta: 'Trasera', cantidad: 1, dim1: H, dim2: L - (2 * E_cm), nota: 'Posterior (entre laterales)' }
                     ];
 
                     return piezasBase
-                        .filter(p => p.dim1 > 0.1 && p.dim2 > 0.1) // Filtrar piezas con dimensiones casi nulas
+                        .filter(p => p.dim1 > 0.1 && p.dim2 > 0.1)
                         .map(p => ({
                             ...p,
                             color: colorMap[p.etiqueta] || '#6c757d',
-                            shortCode: shortCodeMap[p.etiqueta] || '?' // Añadir código corto
+                            shortCode: shortCodeMap[p.etiqueta] || '?'
                         }));
                 });
 
+                // --- Resultado Corte (Existente) ---
                 const resultadoCorte = computed(() => {
-                    const piezas = piezasCalculadas.value;
-                    const sh = parseFloat(sheetHeight.value); const sw = parseFloat(sheetWidth.value); const price = parseFloat(boardPrice.value);
-                    const defaultResult = { count: -1, totalPrice: 0, boardData: [], error: null }; // count -1 indica no calculado aún
+                     const piezas = piezasCalculadas.value;
+                     const sh = parseFloat(sheetHeight.value); const sw = parseFloat(sheetWidth.value); const price = parseFloat(boardPrice.value);
+                     const defaultResult = { count: -1, totalPrice: 0, boardData: [], error: null };
 
-                    // Validaciones antes de llamar al packer
-                    if (!piezas || piezas.length === 0) {
+                     if (!piezas || piezas.length === 0) {
                          defaultResult.error="Ingrese dimensiones válidas para el mueble.";
                          return defaultResult;
-                    }
-                    if (piezas[0].etiqueta === 'Error') {
-                         defaultResult.error = piezas[0].dim1; // Mostrar mensaje de error específico
+                     }
+                     if (piezas[0].etiqueta === 'Error') {
+                         defaultResult.error = piezas[0].dim1;
                          return defaultResult;
-                    }
-                    if (isNaN(sh) || isNaN(sw) || sh <= 0 || sw <= 0) {
+                     }
+                     if (isNaN(sh) || isNaN(sw) || sh <= 0 || sw <= 0) {
                          defaultResult.error="Dimensiones de tabla inválidas.";
                          return defaultResult;
-                    }
-                    if (isNaN(price) || price < 0) {
+                     }
+                     if (isNaN(price) || price < 0) {
                          defaultResult.error="Precio por tabla inválido.";
                          return defaultResult;
-                    }
+                     }
 
-                    try {
-                        // Llamar al packer con las piezas (que ahora incluyen Puertas)
-                        const hojasCalculadas = fitPiezasEnTablas(piezas, sw, sh);
-                        const numSheets = hojasCalculadas.length;
-                        const totalPrice = numSheets * price;
-
-                        const boardData = hojasCalculadas.map(hoja => ({
-                            id: hoja.id,
-                            pieces: hoja.ocupados.map(p => ({ // Mapear piezas ocupadas
-                                id: p.id, etiqueta: p.etiqueta, color: p.color, shortCode: p.shortCode,
-                                originalDim1: p.originalDim1, originalDim2: p.originalDim2,
-                                x: p.x, y: p.y, w: p.w, h: p.h
-                            }))
-                        }));
-
-                        return { count: numSheets, totalPrice: totalPrice, boardData: boardData, error: null };
-                    } catch (error) {
+                     try {
+                         const hojasCalculadas = fitPiezasEnTablas(piezas, sw, sh);
+                         const numSheets = hojasCalculadas.length;
+                         const totalPrice = numSheets * price;
+                         const boardData = hojasCalculadas.map(hoja => ({
+                             id: hoja.id,
+                             pieces: hoja.ocupados.map(p => ({
+                                 id: p.id, etiqueta: p.etiqueta, color: p.color, shortCode: p.shortCode,
+                                 originalDim1: p.originalDim1, originalDim2: p.originalDim2,
+                                 x: p.x, y: p.y, w: p.w, h: p.h
+                             }))
+                         }));
+                         return { count: numSheets, totalPrice: totalPrice, boardData: boardData, error: null };
+                     } catch (error) {
                          console.error("Error en el packing:", error);
                          defaultResult.error = error.message || "Error desconocido en cálculo de corte.";
-                         defaultResult.count = 0; // Resetear contador en error
-                         defaultResult.boardData = []; // Limpiar datos de tablas
+                         defaultResult.count = 0;
+                         defaultResult.boardData = [];
                          return defaultResult;
+                     }
+                 });
+
+                 // --- Métodos para el Template Plano Corte (Existente) ---
+                const getPieceStyle = (piece, currentSheetW, currentSheetH) => {
+                    const safeSheetW = currentSheetW > 0 ? currentSheetW : 1; const safeSheetH = currentSheetH > 0 ? currentSheetH : 1;
+                    const widthPerc = Math.max((piece.w / safeSheetW) * 100, 0.1);
+                    const heightPerc = Math.max((piece.h / safeSheetH) * 100, 0.1);
+                    return {
+                        position: 'absolute', left: (piece.x / safeSheetW) * 100 + '%',
+                        top: (piece.y / safeSheetH) * 100 + '%', width: widthPerc + '%',
+                        height: heightPerc + '%', backgroundColor: piece.color
+                    };
+                };
+                const getPieceTooltip = (piece) => {
+                    return `${piece.etiqueta} (${formatDecimal(piece.originalDim1)} x ${formatDecimal(piece.originalDim2)} cm)\nPos: (${formatDecimal(piece.x)}, ${formatDecimal(piece.y)})\nDim Colocada: ${formatDecimal(piece.w)} x ${formatDecimal(piece.h)}\nID: ${piece.id}`;
+                };
+
+
+                // --- NUEVO: Lógica de Three.js ---
+
+                // Función para inicializar la escena 3D
+                function initThreeJS() {
+                    if (!rendererContainer.value || !THREE) return;
+
+                    try {
+                        // Escena
+                        const _scene = new THREE.Scene(); // Create locally first
+                        _scene.background = new THREE.Color(0xf0f0f0);
+                        scene.value = markRaw(_scene); // Mark raw before assigning to ref
+
+                        // Cámara
+                        const container = rendererContainer.value;
+                        const aspect = container.clientWidth / container.clientHeight;
+                        const _camera = new THREE.PerspectiveCamera(50, aspect, 1, 2000);
+                        _camera.position.set(100, 100, 150);
+                        camera.value = markRaw(_camera); // Mark raw
+
+                        // Luces (simple)
+                        scene.value.add(new THREE.AmbientLight(0xffffff, 0.6));
+                        const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+                        dirLight.position.set(0.5, 1, 1);
+                        scene.value.add(dirLight); // No need to markRaw lights if not accessed elsewhere
+
+                        // Renderer
+                        const _renderer = new THREE.WebGLRenderer({ antialias: true }); // Create locally
+                        _renderer.setSize(container.clientWidth, container.clientHeight);
+                        _renderer.setPixelRatio(window.devicePixelRatio);
+                        renderer.value = markRaw(_renderer); // Mark raw
+                        container.appendChild(renderer.value.domElement);
+
+                        // Controles de órbita
+                        const _controls = new OrbitControls(camera.value, renderer.value.domElement); // Create locally
+                        _controls.enableDamping = true;
+                        _controls.dampingFactor = 0.1;
+                        _controls.screenSpacePanning = false;
+                        controls.value = markRaw(_controls); // Mark raw
+
+                        // Grupo para el mueble
+                        const _furnitureGroup = new THREE.Group(); // Create locally
+                        furnitureGroup.value = markRaw(_furnitureGroup); // Mark raw
+                        scene.value.add(furnitureGroup.value);
+
+                        // Iniciar loop de animación
+                        animate();
+                        isRendererReady.value = true;
+                        renderError.value = null;
+
+                        // Listener para redimensionar
+                        window.addEventListener('resize', onWindowResize);
+
+                    } catch (error) {
+                         console.error("Error inicializando Three.js:", error);
+                         renderError.value = "No se pudo iniciar el visor 3D.";
+                         isRendererReady.value = false;
                     }
+                }
+
+                // Función para el loop de animación
+                function animate() {
+                    if (!renderer.value || !scene.value || !camera.value) return; // Salir si no está listo
+                    animationFrameId = requestAnimationFrame(animate);
+                    controls.value.update(); // Necesario si enableDamping es true
+                    renderer.value.render(scene.value, camera.value);
+                }
+
+                // Función para manejar redimensionamiento
+                function onWindowResize() {
+                    if (!camera.value || !renderer.value || !rendererContainer.value) return;
+                    const container = rendererContainer.value;
+                    camera.value.aspect = container.clientWidth / container.clientHeight;
+                    camera.value.updateProjectionMatrix();
+                    renderer.value.setSize(container.clientWidth, container.clientHeight);
+                }
+
+                // Función para actualizar el modelo 3D del mueble
+                function updateFurnitureModel() {
+                    if (!isRendererReady.value || !furnitureGroup.value) return; // No actualizar si el renderer no está listo
+
+                    // Limpiar modelo anterior
+                    while (furnitureGroup.value.children.length > 0) {
+                        const object = furnitureGroup.value.children[0];
+                        if (object.geometry) object.geometry.dispose();
+                        //if (object.material) object.material.dispose(); // Cuidado si compartes materiales
+                        furnitureGroup.value.remove(object);
+                    }
+                    renderError.value = null; // Limpiar error previo
+
+                    // Obtener dimensiones y validar
+                    const L = parseFloat(largo.value);
+                    const A = parseFloat(ancho.value); // Profundidad
+                    const H = parseFloat(alto.value);
+                    const E_mm = parseFloat(espesor.value);
+                    const luz = parseFloat(LUZ_ENTRE_PUERTAS_CM.value);
+
+                    // Re-validar aquí también para el 3D
+                    if (isNaN(L) || isNaN(A) || isNaN(H) || isNaN(E_mm) || L <= 0 || A <= 0 || H <= 0 || E_mm <= 0 || isNaN(luz) || luz < 0) {
+                        renderError.value = "Dimensiones inválidas.";
+                        return;
+                    }
+                    const E_cm = E_mm / 10;
+                    if (L <= 2 * E_cm || H <= 2 * E_cm) {
+                         renderError.value = "Dimensiones insuficientes para estructura.";
+                         return;
+                    }
+                    const anchoTotalFrente = L - (2 * E_cm);
+                    const anchoDisponibleParaPuertas = anchoTotalFrente - luz;
+                    const anchoPuerta = anchoDisponibleParaPuertas / 2;
+                    if (anchoPuerta <= 0.1){
+                         renderError.value = "Ancho insuficiente para puertas.";
+                         return;
+                    }
+
+
+                    try {
+                        // Crear materiales (simples, uno por color)
+                        const materials = {};
+                        for (const key in colorMap) {
+                            materials[key] = new THREE.MeshStandardMaterial({ // Standard para reaccionar a la luz
+                                color: colorMap[key],
+                                roughness: 0.8, // Menos brillante
+                                metalness: 0.1
+                            });
+                        }
+                        materials['Error'] = new THREE.MeshBasicMaterial({ color: colorMap['Error'] }); // Básico para error
+
+                        // Crear y posicionar piezas (Coordenadas: X=Largo, Y=Alto, Z=Ancho/Profundidad. Origen en centro de la base inferior)
+
+                        // Base (B): L x A, Grosor E_cm
+                        const baseGeo = new THREE.BoxGeometry(L, E_cm, A);
+                        const baseMesh = new THREE.Mesh(baseGeo, materials['Base']);
+                        baseMesh.position.set(0, E_cm / 2, 0); // Centrado en X/Z, a E_cm/2 en Y
+                        furnitureGroup.value.add(baseMesh);
+
+                        // Tapa (T): L x A, Grosor E_cm
+                        const tapaGeo = new THREE.BoxGeometry(L, E_cm, A);
+                        const tapaMesh = new THREE.Mesh(tapaGeo, materials['Tapa']);
+                        tapaMesh.position.set(0, H - E_cm / 2, 0); // Centrado en X/Z, abajo del Alto total
+                        furnitureGroup.value.add(tapaMesh);
+
+                        // Lateral Izquierdo (L): H x A, Grosor E_cm
+                        const latGeo = new THREE.BoxGeometry(E_cm, H, A); // Grosor en X
+                        const latIzqMesh = new THREE.Mesh(latGeo, materials['Lateral']);
+                        latIzqMesh.position.set(-L / 2 + E_cm / 2, H / 2, 0); // Pegado al borde izquierdo
+                        furnitureGroup.value.add(latIzqMesh);
+
+                        // Lateral Derecho (L): H x A, Grosor E_cm
+                        const latDerMesh = new THREE.Mesh(latGeo.clone(), materials['Lateral']); // Clonar geometría es eficiente
+                        latDerMesh.position.set(L / 2 - E_cm / 2, H / 2, 0); // Pegado al borde derecho
+                        furnitureGroup.value.add(latDerMesh);
+
+                        // Trasera (R): (L - 2*E_cm) x H, Grosor E_cm
+                        const traseraW = L - 2 * E_cm;
+                        if (traseraW > 0.1) { // Solo si cabe
+                             const traseraGeo = new THREE.BoxGeometry(traseraW, H, E_cm); // Grosor en Z
+                             const traseraMesh = new THREE.Mesh(traseraGeo, materials['Trasera']);
+                             traseraMesh.position.set(0, H / 2, -A / 2 + E_cm / 2); // Centrado en X, pegado atrás
+                             furnitureGroup.value.add(traseraMesh);
+                        }
+
+                        // Puerta Izquierda (P): anchoPuerta x H, Grosor E_cm
+                        const puertaGeo = new THREE.BoxGeometry(anchoPuerta, H, E_cm); // Grosor en Z
+                        const puertaIzqMesh = new THREE.Mesh(puertaGeo, materials['Puerta']);
+                        const posXPuertaIzq = - (L / 2 - E_cm) + anchoPuerta / 2; // Posición X centro puerta izq
+                        puertaIzqMesh.position.set(posXPuertaIzq, H / 2, A / 2 - E_cm / 2); // Pegada al frente, lado izq
+                        furnitureGroup.value.add(puertaIzqMesh);
+
+                        // Puerta Derecha (P): anchoPuerta x H, Grosor E_cm
+                        const puertaDerMesh = new THREE.Mesh(puertaGeo.clone(), materials['Puerta']);
+                        const posXPuertaDer = (L / 2 - E_cm) - anchoPuerta / 2; // Posición X centro puerta der
+                        puertaDerMesh.position.set(posXPuertaDer, H / 2, A / 2 - E_cm / 2); // Pegada al frente, lado der
+                        furnitureGroup.value.add(puertaDerMesh);
+
+                        // Ajustar cámara para que vea todo el mueble (opcional, mejora UX)
+                         fitCameraToObject(camera.value, furnitureGroup.value, controls.value);
+
+                     } catch(error) {
+                         console.error("Error creando geometría 3D:", error);
+                         renderError.value = "Error al generar piezas 3D.";
+                         // Limpiar por si acaso quedaron piezas parciales
+                          while (furnitureGroup.value.children.length > 0) {
+                             furnitureGroup.value.remove(furnitureGroup.value.children[0]);
+                         }
+                     }
+                }
+
+                 // Helper para ajustar la cámara (simple)
+                 function fitCameraToObject( camera, object, controls, offset = 1.5 ) {
+                     const boundingBox = new THREE.Box3();
+                     boundingBox.setFromObject( object );
+
+                     const center = new THREE.Vector3();
+                     boundingBox.getCenter( center );
+
+                     const size = new THREE.Vector3();
+                     boundingBox.getSize( size );
+
+                     // get the max side of the bounding box (fits to width OR height dependending on camera)
+                     const maxDim = Math.max( size.x, size.y, size.z );
+                     const fov = camera.fov * ( Math.PI / 180 );
+                     let cameraZ = Math.abs( maxDim / 2 / Math.tan( fov / 2 ) );
+
+                     cameraZ *= offset; // zoom out a little so that objects don't fill the screen
+
+                     // Ajustar posición de la cámara para ver desde un ángulo
+                     camera.position.x = center.x + cameraZ / 1.5; // Mover un poco a un lado
+                     camera.position.y = center.y + cameraZ / 2;   // Mover un poco arriba
+                     camera.position.z = center.z + cameraZ;       // Mover atrás
+
+                     const minZ = boundingBox.min.z;
+                     const cameraToFarEdge = ( minZ < 0 ) ? -minZ + cameraZ : cameraZ - minZ;
+
+                     camera.far = cameraToFarEdge * 3;
+                     camera.updateProjectionMatrix();
+
+                     if ( controls ) {
+                       controls.target.copy( center ); // Apuntar al centro del objeto
+                       controls.saveState(); // Guardar este estado si usas reset
+                       controls.update();
+                     }
+                 }
+
+                // --- Hooks del Ciclo de Vida de Vue ---
+                onMounted(() => {
+                    // Esperar a que el DOM esté listo y Vue haya montado el contenedor
+                    nextTick(() => {
+                         initThreeJS();
+                         // Llamar a updateFurnitureModel una vez inicializado Three.js
+                         if(isRendererReady.value) {
+                             updateFurnitureModel();
+                         }
+                    });
                 });
 
-                // --- Métodos para el Template ---
-                const getPieceStyle = (piece, currentSheetW, currentSheetH) => {
-                     const safeSheetW = currentSheetW > 0 ? currentSheetW : 1; const safeSheetH = currentSheetH > 0 ? currentSheetH : 1;
-                     // Asegurar dimensiones mínimas para visibilidad y evitar errores de %
-                     const widthPerc = Math.max((piece.w / safeSheetW) * 100, 0.1);
-                     const heightPerc = Math.max((piece.h / safeSheetH) * 100, 0.1);
-                     return {
-                         position: 'absolute',
-                         left: (piece.x / safeSheetW) * 100 + '%',
-                         top: (piece.y / safeSheetH) * 100 + '%',
-                         width: widthPerc + '%',
-                         height: heightPerc + '%',
-                         backgroundColor: piece.color
-                     };
-                 };
-                const getPieceTooltip = (piece) => {
-                     // Usar \n para saltos de línea en el atributo title
-                     return `${piece.etiqueta} (${formatDecimal(piece.originalDim1)} x ${formatDecimal(piece.originalDim2)} cm)\nPos: (${formatDecimal(piece.x)}, ${formatDecimal(piece.y)})\nDim Colocada: ${formatDecimal(piece.w)} x ${formatDecimal(piece.h)}\nID: ${piece.id}`;
-                 };
+                onBeforeUnmount(() => {
+                    // Limpiar Three.js
+                    cancelAnimationFrame(animationFrameId);
+                    window.removeEventListener('resize', onWindowResize);
+                    if (renderer.value) {
+                         // Dispose geometries and materials if necessary to free GPU memory
+                        if(furnitureGroup.value) {
+                             furnitureGroup.value.traverse(child => {
+                                 if (child.geometry) child.geometry.dispose();
+                                 // Material disposal is tricky if shared, skip for simplicity for now
+                                 // if (child.material) {
+                                 //     if (Array.isArray(child.material)) {
+                                 //         child.material.forEach(m => m.dispose());
+                                 //     } else {
+                                 //         child.material.dispose();
+                                 //     }
+                                 // }
+                             });
+                        }
+                        renderer.value.dispose();
+                        if(rendererContainer.value && renderer.value.domElement) {
+                             rendererContainer.value.removeChild(renderer.value.domElement);
+                        }
+                    }
+                    if (controls.value) {
+                        controls.value.dispose();
+                    }
+                    isRendererReady.value = false; // Marcar como no listo
+                });
+
+                // --- Watchers ---
+                // Observar los cambios en las dimensiones principales para actualizar el 3D
+                watch([largo, ancho, alto, espesor, LUZ_ENTRE_PUERTAS_CM], () => {
+                     if(isRendererReady.value){
+                         updateFurnitureModel();
+                     }
+                }, { immediate: false }); // No inmediato, esperar a onMounted
 
                 // --- Exponer al Template ---
                 return {
                     largo, ancho, alto, espesor, sheetHeight, sheetWidth, boardPrice,
                     currentDateTime, piezasCalculadas, resultadoCorte,
                     formatDecimal, formatCurrency, getPieceStyle, getPieceTooltip,
-                    currentSheetWidth: sheetWidth, // Para aspect ratio inicial
-                    currentSheetHeight: sheetHeight, // Para aspect ratio inicial
-                    LUZ_ENTRE_PUERTAS_CM // Exponer la constante para mostrarla en la nota
+                    currentSheetWidth: sheetWidth, // Para aspect ratio plano corte
+                    currentSheetHeight: sheetHeight, // Para aspect ratio plano corte
+                    LUZ_ENTRE_PUERTAS_CM,
+                    // Nuevos para 3D
+                    rendererContainer,
+                    isRendererReady,
+                    renderError
                 };
             }
         }).mount('#app');
