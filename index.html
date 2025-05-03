@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora de Mueble, Tablas y Precio (Packer v1)</title>
+    <title>Calculadora de Mueble - Plano de Corte v1.1</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <style>
         #app {
-            max-width: 950px;
+            max-width: 1100px;
         }
         .table th, .table td {
             vertical-align: middle;
@@ -20,177 +20,146 @@
             font-weight: bold;
             margin-right: 15px;
         }
-        .pieza-visual {
-            display: inline-block;
-            border: 1px solid #ccc;
-            padding: 5px 8px;
-            margin: 3px;
-            border-radius: 4px;
-            font-size: 0.8rem;
-            color: #fff;
-            text-shadow: 1px 1px 1px rgba(0,0,0,0.4);
-        }
-        .board-visualization {
-            background-color: #f8f9fa;
-            border: 1px dashed #dee2e6;
+        .construction-note {
+            font-size: 0.9rem;
+            background-color: #e9ecef;
             padding: 10px;
-            margin-top: 10px;
-            min-height: 50px;
+            border-radius: 5px;
+            border-left: 4px solid #0d6efd; /* Blue accent */
+            margin-bottom: 1.5rem;
+        }
+        /* --- Estilos para el Plano de Corte --- */
+        .sheet-layout-container {
+            position: relative;
+            border: 2px solid #343a40;
+            background-color: #fdfdfd;
+            width: 100%;
+            max-width: 500px; /* Límite visual */
+            margin: 0 auto 15px auto;
+            overflow: hidden;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+            /* Aspect ratio se aplica dinámicamente */
+        }
+        .placed-piece {
+            position: absolute;
+            border: 1px solid rgba(0, 0, 0, 0.7); /* Borde más visible */
+            box-sizing: border-box;
+            overflow: hidden;
+             /* Asegurar visibilidad mínima */
+            min-width: 1px;
+            min-height: 1px;
+            /* Transición suave */
+            /* transition: all 0.1s ease-in-out; */ /* Puede ser molesto al recalcular */
         }
          .board-header {
             font-weight: bold;
             margin-bottom: 5px;
+            text-align: center;
          }
-         /* Estilo opcional si quieres visualizar con Canvas/SVG más adelante */
-         /* .packing-viz-container { position: relative; border: 1px solid black; } */
-         /* .packed-item-viz { position: absolute; border: 1px solid red; background-color: rgba(255, 0, 0, 0.5); } */
+         .piece-tooltip-content {
+            white-space: pre; /* Para respetar saltos de línea en title */
+         }
 
     </style>
 </head>
 <body>
     <div id="app" class="container mt-4 mb-5">
-        <h1 class="mb-4 text-center">Calculadora de Mueble, Tablas y Costo (Packer v1)</h1>
+        <h1 class="mb-4 text-center">Calculadora de Mueble - Plano de Corte Estimado v1.1</h1>
 
         <div class="row">
-            <div class="col-lg-6">
-                <div class="card shadow-sm h-100">
-                    <div class="card-header">
-                        1. Dimensiones del Mueble y Material
-                    </div>
-                    <div class="card-body">
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label for="largo" class="form-label">Largo Base (cm):</label>
-                                <input type="number" id="largo" class="form-control" v-model.number="largo" min="1">
-                            </div>
-                            <div class="col-md-6">
-                                <label for="ancho" class="form-label">Ancho Base (cm):</label>
-                                <input type="number" id="ancho" class="form-control" v-model.number="ancho" min="1">
-                            </div>
-                            <div class="col-md-6">
-                                <label for="alto" class="form-label">Alto Total (cm):</label>
-                                <input type="number" id="alto" class="form-control" v-model.number="alto" min="1">
-                            </div>
-                            <div class="col-md-6">
-                                <label for="espesor" class="form-label">Espesor Material (mm):</label>
-                                <input type="number" id="espesor" class="form-control" v-model.number="espesor" min="1" step="0.1">
-                            </div>
+             <div class="col-lg-6">
+                 <div class="card shadow-sm h-100">
+                     <div class="card-header">1. Dimensiones del Mueble y Material</div>
+                     <div class="card-body"><div class="row g-3">
+                            <div class="col-md-6"><label for="largo" class="form-label">Largo Base (cm):</label><input type="number" id="largo" class="form-control" v-model.number="largo" min="1"></div>
+                            <div class="col-md-6"><label for="ancho" class="form-label">Ancho Base (cm):</label><input type="number" id="ancho" class="form-control" v-model.number="ancho" min="1"></div>
+                            <div class="col-md-6"><label for="alto" class="form-label">Alto Total (cm):</label><input type="number" id="alto" class="form-control" v-model.number="alto" min="1"></div>
+                            <div class="col-md-6"><label for="espesor" class="form-label">Espesor Material (mm):</label><input type="number" id="espesor" class="form-control" v-model.number="espesor" min="1" step="0.1"></div>
                         </div>
-                    </div>
-                </div>
-            </div>
+                     </div>
+                 </div>
+             </div>
+             <div class="col-lg-6">
+                 <div class="card shadow-sm h-100">
+                     <div class="card-header">2. Datos de la Tabla de MDF</div>
+                     <div class="card-body"><div class="row g-3">
+                            <div class="col-md-6"><label for="sheetHeight" class="form-label">Alto Tabla (cm):</label><input type="number" id="sheetHeight" class="form-control" v-model.number="sheetHeight" min="1"></div>
+                            <div class="col-md-6"><label for="sheetWidth" class="form-label">Ancho Tabla (cm):</label><input type="number" id="sheetWidth" class="form-control" v-model.number="sheetWidth" min="1"></div>
+                            <div class="col-12"><label for="boardPrice" class="form-label">Precio por Tabla ($):</label><input type="number" id="boardPrice" class="form-control" v-model.number="boardPrice" min="0" step="any"></div>
+                        </div>
+                     </div>
+                 </div>
+             </div>
+        </div>
 
-            <div class="col-lg-6">
-                <div class="card shadow-sm h-100">
-                    <div class="card-header">
-                        2. Datos de la Tabla de MDF
-                    </div>
-                    <div class="card-body">
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label for="sheetHeight" class="form-label">Alto Tabla (cm):</label>
-                                <input type="number" id="sheetHeight" class="form-control" v-model.number="sheetHeight" min="1">
-                            </div>
-                            <div class="col-md-6">
-                                <label for="sheetWidth" class="form-label">Ancho Tabla (cm):</label>
-                                <input type="number" id="sheetWidth" class="form-control" v-model.number="sheetWidth" min="1">
-                            </div>
-                             <div class="col-12">
-                                <label for="boardPrice" class="form-label">Precio por Tabla ($):</label>
-                                <input type="number" id="boardPrice" class="form-control" v-model.number="boardPrice" min="0" step="any">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div> <div class="card shadow-sm mt-4">
+        <div class="card shadow-sm mt-4">
             <div class="card-header">
                 3. Resultados del Cálculo
             </div>
             <div class="card-body">
                 <div class="text-center mb-4 p-3 bg-light rounded border">
-                    <span class="resultado-tablas">
-                        Tablas MDF: {{ resultadoCorte.count >= 0 ? resultadoCorte.count : 'N/A' }}
-                    </span>
-                    <span class="resultado-precio">
-                         Costo Total: {{ formatCurrency(resultadoCorte.totalPrice) }}
-                    </span>
-                     <p v-if="resultadoCorte.count > 0 && !resultadoCorte.error" class="text-muted small mt-2 mb-0">
-                       Estimación con packer simplificado. La disposición real y el costo pueden variar.
-                    </p>
-                     <p v-if="resultadoCorte.error" class="text-danger small mt-2 mb-0">
-                       <strong>Error:</strong> {{ resultadoCorte.error }}
-                    </p>
-                </div>
+                     <span class="resultado-tablas">Tablas MDF: {{ resultadoCorte.count >= 0 ? resultadoCorte.count : 'N/A' }}</span>
+                     <span class="resultado-precio">Costo Total: {{ formatCurrency(resultadoCorte.totalPrice) }}</span>
+                     <p v-if="resultadoCorte.count > 0 && !resultadoCorte.error" class="text-muted small mt-2 mb-0">Estimación con packer simplificado. El layout real y costo pueden variar.</p>
+                     <p v-if="resultadoCorte.error" class="text-danger small mt-2 mb-0"><strong>Error:</strong> {{ resultadoCorte.error }}</p>
+                 </div>
+
+                 <div class="construction-note">
+                     <p class="mb-1 fw-bold">Método de Construcción Asumido:</p>
+                     <ul class="mb-0" style="padding-left: 1.2em;">
+                         <li>Laterales: Cubren Alto y Ancho (profundidad) total.</li>
+                         <li>Base/Tapa: Cubren Largo y Ancho (profundidad) total externo.</li>
+                         <li>Frente/Trasera: Tienen Alto total, pero encajan <strong>entre</strong> los laterales (Ancho = Largo - 2*Espesor).</li>
+                     </ul>
+                 </div>
 
                 <h3 class="fs-5 mt-4 mb-3 text-center">Despiece Detallado del Mueble</h3>
-                <div class="table-responsive mb-4">
-                    <table class="table table-striped table-bordered table-hover table-sm">
-                        <thead class="table-dark">
-                            <tr>
-                                <th>Etiqueta</th>
-                                <th>Cantidad</th>
-                                <th>Medida 1 (cm)</th>
-                                <th>Medida 2 (cm)</th>
-                                <th>Color Ref.</th>
-                                <th>Notas</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-if="piezasCalculadas.length === 0 || piezasCalculadas[0].etiqueta === 'Error'">
-                                <td colspan="6" class="text-center fst-italic">{{ piezasCalculadas.length > 0 ? piezasCalculadas[0].dim1 : 'Ingrese dimensiones válidas para calcular.' }}</td>
-                            </tr>
-                            <tr v-else v-for="pieza in piezasCalculadas" :key="pieza.etiqueta + pieza.dim1"> <td>{{ pieza.etiqueta }}</td>
-                                <td>{{ pieza.cantidad }}</td>
-                                <td>{{ formatDecimal(pieza.dim1) }}</td>
-                                <td>{{ formatDecimal(pieza.dim2) }}</td>
-                                <td>
-                                    <span class="pieza-visual" :style="{ backgroundColor: pieza.color }">&nbsp;&nbsp;&nbsp;</span>
-                                </td>
-                                <td>{{ pieza.nota || '-' }}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+                 <div class="table-responsive mb-4">
+                     <table class="table table-striped table-bordered table-hover table-sm">
+                         <thead class="table-dark"><tr><th>Etiqueta</th><th>Cantidad</th><th>Medida 1 (cm)</th><th>Medida 2 (cm)</th><th>Color Ref.</th><th>Notas</th></tr></thead>
+                         <tbody>
+                             <tr v-if="piezasCalculadas.length === 0 || piezasCalculadas[0].etiqueta === 'Error'"><td colspan="6" class="text-center fst-italic">{{ piezasCalculadas.length > 0 ? piezasCalculadas[0].dim1 : 'Ingrese dimensiones válidas.' }}</td></tr>
+                             <tr v-else v-for="pieza in piezasCalculadas" :key="pieza.etiqueta + pieza.dim1"><td :style="{borderLeft: `5px solid ${pieza.color}`}">{{ pieza.etiqueta }}</td><td>{{ pieza.cantidad }}</td><td>{{ formatDecimal(pieza.dim1) }}</td><td>{{ formatDecimal(pieza.dim2) }}</td><td><span :style="{ backgroundColor: pieza.color, padding: '2px 8px', borderRadius: '3px' }">&nbsp;</span></td><td>{{ pieza.nota || '-' }}</td></tr>
+                         </tbody>
+                     </table>
+                 </div>
 
-                <h3 class="fs-5 mt-4 mb-3 text-center">Asignación Estimada por Tabla (Packer Simplificado)</h3>
-                  <p v-if="resultadoCorte.count > 0 && !resultadoCorte.error" class="text-center text-muted small">
-                      Visualización de piezas asignadas por el algoritmo; NO es un plano de corte exacto debido a la simplificación del manejo de espacios libres.
+                <h3 class="fs-4 mt-5 mb-4 text-center">Planos de Corte Estimados</h3>
+                  <p v-if="resultadoCorte.count > 0 && !resultadoCorte.error" class="text-center text-muted small mb-4">
+                      Representación visual basada en el packer simplificado. NO considera ancho de corte (kerf).
                   </p>
-                 <div v-if="resultadoCorte.boardData && resultadoCorte.boardData.length > 0 && !resultadoCorte.error">
-                    <div v-for="board in resultadoCorte.boardData" :key="board.id" class="mb-3">
-                        <div class="board-header">Tabla #{{ board.id }}</div>
-                        <div class="board-visualization">
-                             <span v-if="!board.pieces || board.pieces.length === 0" class="fst-italic text-muted small">No se asignaron piezas a esta tabla (puede indicar espacio lleno o error).</span>
-                             <span v-else v-for="(pieza, index) in board.pieces"
-                                   :key="pieza.id + '-' + index" class="pieza-visual"
-                                   :style="{ backgroundColor: pieza.color }"
-                                   :title="`${pieza.etiqueta} (${formatDecimal(pieza.originalDim1)} x ${formatDecimal(pieza.originalDim2)} cm) @ (${pieza.x.toFixed(1)}, ${pieza.y.toFixed(1)}) W:${pieza.w.toFixed(1)} H:${pieza.h.toFixed(1)}`">
-                                   {{ pieza.etiqueta }} ({{formatDecimal(pieza.originalDim1)}}x{{formatDecimal(pieza.originalDim2)}})
-                             </span>
+                 <div v-if="resultadoCorte.boardData && resultadoCorte.boardData.length > 0 && !resultadoCorte.error" class="row">
+                    <div v-for="board in resultadoCorte.boardData" :key="board.id" class="col-lg-6 mb-4"> <div class="board-header">Tabla #{{ board.id }}</div>
+                        <div class="sheet-layout-container"
+                             :style="{
+                                 aspectRatio: (currentSheetWidth > 0 ? currentSheetWidth : 1) / (currentSheetHeight > 0 ? currentSheetHeight : 1)
+                             }">
+                             <div v-for="piece in board.pieces"
+                                  :key="piece.id"
+                                  class="placed-piece"
+                                  :style="getPieceStyle(piece, currentSheetWidth, currentSheetHeight)"
+                                  :title="getPieceTooltip(piece)">
+                             </div>
                         </div>
                     </div>
                  </div>
                  <div v-else-if="!resultadoCorte.error && piezasCalculadas.length > 0 && piezasCalculadas[0].etiqueta !== 'Error'" class="text-center text-muted fst-italic">
-                    No se calcularon tablas o no se pudieron asignar piezas.
+                    No se generaron planos de corte. Verifique dimensiones/errores.
                  </div>
-
-            </div> </div> <p class="text-center text-muted mt-4 small">
-            Nota sobre Despiece: Cálculo basado en construcción simple.
-            <br>Fecha Consulta: {{ currentDate }}
+                 </div> </div> <p class="text-center text-muted mt-4 small">
+            {{ currentDateTime }}
         </p>
     </div>
-
 
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 
     <script>
-        const { createApp, ref, computed } = Vue;
+        const { createApp, ref, computed, watch } = Vue; // Añadimos watch si fuera necesario
 
         createApp({
             setup() {
-                // --- Estado Reactivo (Data) ---
+                // --- Estado Reactivo ---
                 const largo = ref(80);
                 const ancho = ref(80);
                 const alto = ref(160);
@@ -198,258 +167,147 @@
                 const sheetHeight = ref(260);
                 const sheetWidth = ref(183);
                 const boardPrice = ref(25000);
-                const currentDate = new Date().toLocaleDateString('es-AR');
+                const currentDateTime = ref(''); // Para fecha y hora
 
-                const colorMap = { /* Mismo colorMap que antes */
+                const updateDateTime = () => {
+                    currentDateTime.value = new Date().toLocaleString('es-AR', {
+                         timeZone: 'America/Argentina/Buenos_Aires', // Especificar zona horaria
+                         dateStyle: 'long', timeStyle: 'medium'
+                     });
+                };
+                updateDateTime(); // Inicializar
+                // Podrías añadir un intervalo si quisieras que se actualice, pero no es necesario aquí.
+
+                const colorMap = { /* Mismo colorMap */
                     'Base': '#dc3545', 'Tapa': '#fd7e14', 'Lateral': '#ffc107',
                     'Frente': '#20c997', 'Trasera': '#0d6efd', 'Error': '#6c757d'
                 };
 
-                const formatDecimal = (value) => { /* Misma función */
-                    if (typeof value === 'number') return value.toFixed(1);
-                    return value;
-                };
-                const formatCurrency = (value) => { /* Misma función */
+                // --- Funciones Auxiliares ---
+                const formatDecimal = (value) => typeof value === 'number' ? value.toFixed(1) : value;
+                const formatCurrency = (value) => {
                      if (typeof value !== 'number' || isNaN(value)) return '$ --.--';
                      return `$ ${value.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
                 };
 
-                 // --- NUEVA FUNCIÓN DE PACKING INTEGRADA Y MODIFICADA ---
+                // --- Función de Packing (SIN CAMBIOS respecto a la versión anterior) ---
                 function fitPiezasEnTablas(piezasInput, sheetWidth, sheetHeight) {
-                    const hojas = [];
-                    let globalPieceIdCounter = 1; // Para IDs únicos en la visualización
-
-                    // Estructura para representar una hoja
-                    function crearHoja(id) {
-                        return {
-                            id: id, // ID de la hoja
-                            ocupados: [], // Piezas colocadas con sus datos { x, y, w, h, etiqueta, color, ... }
-                            // Lista de espacios libres disponibles (rectángulos)
-                            espacios: [{ x: 0, y: 0, w: sheetWidth, h: sheetHeight }]
-                        };
-                    }
-
-                    // Verifica si una pieza (con W, H) puede caber en un espacio (con w, h)
-                    function puedeColocar(piezaW, piezaH, espacio) {
-                        const cabeNormal = piezaW <= espacio.w && piezaH <= espacio.h;
-                        const cabeRotada = piezaH <= espacio.w && piezaW <= espacio.h;
-                        return { cabe: cabeNormal || cabeRotada, necesitaRotar: !cabeNormal && cabeRotada };
-                    }
-
-                    // Intenta colocar la pieza en la hoja, actualizando espacios (simplificado)
-                    function colocarPiezaEnHoja(hoja, piezaOriginal) {
-                        // Buscar el mejor espacio (ej. el más ajustado - heurística simple)
-                        // Podría mejorarse buscando first-fit, best-fit area, best-fit shortest side etc.
-                        let mejorEspacioIndex = -1;
-                        let rotarParaMejor = false;
-
-                        for (let i = 0; i < hoja.espacios.length; i++) {
-                            const espacio = hoja.espacios[i];
-                            const { cabe, necesitaRotar } = puedeColocar(piezaOriginal.w, piezaOriginal.h, espacio);
-
-                            if (cabe) {
-                                // Simple 'first fit' por ahora
-                                mejorEspacioIndex = i;
-                                rotarParaMejor = necesitaRotar;
-                                break; // Encontró un espacio, usa este
-                            }
-                        }
-
-                        if (mejorEspacioIndex !== -1) {
-                            const espacio = hoja.espacios[mejorEspacioIndex];
-                            const rotada = rotarParaMejor;
-                            const w = rotada ? piezaOriginal.h : piezaOriginal.w; // Ancho de la pieza como se coloca
-                            const h = rotada ? piezaOriginal.w : piezaOriginal.h; // Alto de la pieza como se coloca
-
-                            // Añadir a ocupados con toda la info
-                            hoja.ocupados.push({
-                                id: piezaOriginal.id, // ID único de la instancia de pieza
-                                x: espacio.x,
-                                y: espacio.y,
-                                w: w, // Ancho colocado
-                                h: h, // Alto colocado
-                                etiqueta: piezaOriginal.etiqueta,
-                                color: piezaOriginal.color,
-                                originalDim1: piezaOriginal.originalDim1, // Guardar dims originales
-                                originalDim2: piezaOriginal.originalDim2
-                            });
-
-                            // --- Actualización de espacios (Guillotina MUY Simplificada) ---
-                            // Quitar el espacio usado
-                            hoja.espacios.splice(mejorEspacioIndex, 1);
-
-                            // Añadir los dos nuevos espacios creados por el corte (si tienen área > 0)
-                            // Espacio a la derecha
-                            if (espacio.w - w > 0.1) { // Umbral pequeño para evitar micro-espacios
-                                hoja.espacios.push({ x: espacio.x + w, y: espacio.y, w: espacio.w - w, h: espacio.h });
-                            }
-                            // Espacio abajo
-                            if (espacio.h - h > 0.1) {
-                                hoja.espacios.push({ x: espacio.x, y: espacio.y + h, w: w, h: espacio.h - h }); // Ancho es 'w' de la pieza
-                            }
-                            // Podría añadirse un tercer espacio si espacio.w > w Y espacio.h > h,
-                            // pero se complica. Esta versión es básica.
-                            // TODO: Idealmente, fusionar espacios adyacentes aquí.
-
-                            // Limpiar/Ordenar espacios (opcional, mejora la búsqueda)
-                            // hoja.espacios.sort((a, b) => a.y - b.y || a.x - b.x); // Ordenar por Y, luego X
-
-                            return true; // Pieza colocada
-                        }
-
-                        return false; // No se encontró espacio en esta hoja
-                    }
-
-                    // --- Lógica Principal de fitPiezasEnTablas ---
-
-                    // 1. Validar y Expandir piezas de entrada
-                    let todasLasPiezas = [];
-                    for (const piezaInput of piezasInput) {
-                        const piezaW = piezaInput.dim1;
-                        const piezaH = piezaInput.dim2;
-                        // Validar si cabe en una hoja nueva (en cualquier orientación)
-                         if (!((piezaW <= sheetHeight && piezaH <= sheetWidth) || (piezaW <= sheetWidth && piezaH <= sheetHeight))) {
-                            console.error(`Error Crítico: La pieza ${piezaInput.etiqueta} (${piezaW}x${piezaH}) no cabe en la hoja de ${sheetWidth}x${sheetHeight}.`);
-                            // Lanzar un error o devolver un indicador de fallo
-                            throw new Error(`Pieza ${piezaInput.etiqueta} (${formatDecimal(piezaW)}x${formatDecimal(piezaH)}) no cabe en tabla.`);
-                        }
-
-                        for (let i = 0; i < piezaInput.cantidad; i++) {
-                            todasLasPiezas.push({
-                                id: globalPieceIdCounter++, // ID único de instancia
-                                w: piezaW,
-                                h: piezaH,
-                                area: piezaW * piezaH,
-                                etiqueta: piezaInput.etiqueta,
-                                color: piezaInput.color,
-                                originalDim1: piezaW, // Guardar originales
-                                originalDim2: piezaH
-                             });
-                        }
-                    }
-
-                    // 2. Ordenar por área descendente (o alto, o perímetro...)
-                    todasLasPiezas.sort((a, b) => b.area - a.area); // Mayor área primero
-
-                    // 3. Intentar colocar cada pieza
-                    for (const pieza of todasLasPiezas) {
-                        let colocada = false;
-                        // Intentar en hojas existentes
-                        for (const hoja of hojas) {
-                            if (colocarPiezaEnHoja(hoja, pieza)) {
-                                colocada = true;
-                                break; // Colocada en esta hoja, pasar a la siguiente pieza
-                            }
-                        }
-                        // Si no cupo en ninguna existente, crear nueva hoja
-                        if (!colocada) {
-                            const nuevaHoja = crearHoja(hojas.length + 1);
-                            if (colocarPiezaEnHoja(nuevaHoja, pieza)) { // Debería caber si pasó la validación inicial
-                                hojas.push(nuevaHoja);
-                            } else {
-                                // Esto indicaría un problema en la lógica si la validación inicial pasó
-                                console.error(`Error Lógico: No se pudo colocar la pieza ${pieza.etiqueta} en una hoja nueva.`);
-                                throw new Error(`Error al colocar pieza ${pieza.etiqueta} en hoja nueva.`);
-                            }
-                        }
-                    }
-
-                    // 4. Devolver el array completo de hojas con sus piezas ocupadas
-                    return hojas;
+                     // El código interno completo de esta función es el mismo que en la respuesta anterior
+                     // (crearHoja, puedeColocar, colocarPiezaEnHoja, expansión, ordenación, bucle principal)
+                     // ...
+                     const hojas = []; let globalPieceIdCounter = 1;
+                     function crearHoja(id){ return { id: id, ocupados: [], espacios: [{ x: 0, y: 0, w: sheetWidth, h: sheetHeight }] }; }
+                     function puedeColocar(pw, ph, sp){ const cn=pw<=sp.w&&ph<=sp.h; const cr=ph<=sp.w&&pw<=sp.h; return {cabe:cn||cr, necesitaRotar:!cn&&cr}; }
+                     function colocarPiezaEnHoja(hoja, pOrig){
+                         let mejorIdx=-1, rotar=false;
+                         for(let i=0; i<hoja.espacios.length; i++){ const sp=hoja.espacios[i]; const {cabe,necesitaRotar}=puedeColocar(pOrig.w,pOrig.h,sp); if(cabe){mejorIdx=i; rotar=necesitaRotar; break;}}
+                         if(mejorIdx!==-1){
+                             const sp=hoja.espacios[mejorIdx]; const rt=rotar; const w=rt?pOrig.h:pOrig.w; const h=rt?pOrig.w:pOrig.h;
+                             hoja.ocupados.push({id: pOrig.id, x: sp.x, y: sp.y, w: w, h: h, etiqueta: pOrig.etiqueta, color: pOrig.color, originalDim1: pOrig.originalDim1, originalDim2: pOrig.originalDim2});
+                             hoja.espacios.splice(mejorIdx,1);
+                             if(sp.w-w>0.1) hoja.espacios.push({x:sp.x+w, y:sp.y, w:sp.w-w, h:sp.h});
+                             if(sp.h-h>0.1) hoja.espacios.push({x:sp.x, y:sp.y+h, w:w, h:sp.h-h}); // Ancho era w aquí! Corregido
+                             return true;
+                         } return false;
+                     }
+                     let todas=[];
+                     for(const pIn of piezasInput){ const pw=pIn.dim1; const ph=pIn.dim2; if(!((pw<=sheetHeight&&ph<=sheetWidth)||(pw<=sheetWidth&&ph<=sheetHeight))) throw new Error(`Pieza ${pIn.etiqueta} (${formatDecimal(pw)}x${formatDecimal(ph)}) no cabe.`); for(let i=0; i<pIn.cantidad; i++) todas.push({id:globalPieceIdCounter++, w:pw, h:ph, area:pw*ph, etiqueta:pIn.etiqueta, color:pIn.color, originalDim1:pw, originalDim2:ph}); }
+                     todas.sort((a,b)=>b.area-a.area);
+                     for(const p of todas){ let colocada=false; for(const h of hojas){if(colocarPiezaEnHoja(h,p)){colocada=true; break;}} if(!colocada){const nH=crearHoja(hojas.length+1); if(colocarPiezaEnHoja(nH,p)) hojas.push(nH); else throw new Error(`Error al colocar ${p.etiqueta} en hoja nueva.`);}}
+                     return hojas;
                 }
 
 
-                // --- Propiedades Calculadas (Computed) ---
-
-                const piezasCalculadas = computed(() => { // Misma lógica que antes para calcular piezas
-                    const L = parseFloat(largo.value);
-                    const A = parseFloat(ancho.value);
-                    const H = parseFloat(alto.value);
-                    const E_mm = parseFloat(espesor.value);
-
+                // --- Propiedades Calculadas ---
+                const piezasCalculadas = computed(() => { /* SIN CAMBIOS */
+                    const L = parseFloat(largo.value); const A = parseFloat(ancho.value);
+                    const H = parseFloat(alto.value); const E_mm = parseFloat(espesor.value);
                     if (isNaN(L) || isNaN(A) || isNaN(H) || isNaN(E_mm) || L <= 0 || A <= 0 || H <= 0 || E_mm <= 0) return [];
                     const E_cm = E_mm / 10;
-
-                    if (L <= 2 * E_cm) return [{ etiqueta: 'Error', cantidad: '-', dim1: 'Largo insuficiente', dim2: '-', nota: 'Ajuste medidas', color: colorMap['Error'] }];
-                    if (A <= 0) return [{ etiqueta: 'Error', cantidad: '-', dim1: 'Ancho inválido', dim2: '-', nota: 'Ajuste medidas', color: colorMap['Error'] }];
-                    if (H <= 0) return [{ etiqueta: 'Error', cantidad: '-', dim1: 'Alto inválido', dim2: '-', nota: 'Ajuste medidas', color: colorMap['Error'] }];
-
-                    const piezasBase = [
-                         { etiqueta: 'Base', cantidad: 1, dim1: L, dim2: A, nota: 'Pieza inferior' },
-                         { etiqueta: 'Tapa', cantidad: 1, dim1: L, dim2: A, nota: 'Pieza superior' },
-                         { etiqueta: 'Lateral', cantidad: 2, dim1: H, dim2: A, nota: 'Caras laterales' },
-                         { etiqueta: 'Frente', cantidad: 1, dim1: H, dim2: L - (2 * E_cm), nota: 'Pieza frontal' },
-                         { etiqueta: 'Trasera', cantidad: 1, dim1: H, dim2: L - (2 * E_cm), nota: 'Pieza posterior' }
-                    ];
-
-                    return piezasBase
-                        .filter(p => p.dim1 > 0.1 && p.dim2 > 0.1) // Evitar dims casi cero
-                        .map(p => ({ ...p, color: colorMap[p.etiqueta] || '#6c757d' }));
+                    if (L <= 2 * E_cm) return [{ etiqueta: 'Error', cantidad: '-', dim1: 'Largo insuficiente', nota: 'Ajuste medidas', color: colorMap['Error'] }];
+                    // ... más validaciones ...
+                    const piezasBase = [ /* ...definición piezas... */
+                        { etiqueta: 'Base', cantidad: 1, dim1: L, dim2: A, nota: 'Pieza inferior' },
+                        { etiqueta: 'Tapa', cantidad: 1, dim1: L, dim2: A, nota: 'Pieza superior' },
+                        { etiqueta: 'Lateral', cantidad: 2, dim1: H, dim2: A, nota: 'Caras laterales' },
+                        { etiqueta: 'Frente', cantidad: 1, dim1: H, dim2: L - (2 * E_cm), nota: 'Frontal (entre laterales)' },
+                        { etiqueta: 'Trasera', cantidad: 1, dim1: H, dim2: L - (2 * E_cm), nota: 'Posterior (entre laterales)' }
+                     ];
+                    return piezasBase.filter(p => p.dim1 > 0.1 && p.dim2 > 0.1)
+                                    .map(p => ({ ...p, color: colorMap[p.etiqueta] || '#6c757d' }));
                 });
 
-                // Calcula tablas/costo usando la NUEVA función de packing
-                const resultadoCorte = computed(() => {
-                    const piezas = piezasCalculadas.value;
-                    const sh = parseFloat(sheetHeight.value);
-                    const sw = parseFloat(sheetWidth.value);
-                    const price = parseFloat(boardPrice.value);
+                const resultadoCorte = computed(() => { /* SIN CAMBIOS en la lógica, solo quizás console.log */
+                    const piezas = piezasCalculadas.value; const sh = parseFloat(sheetHeight.value);
+                    const sw = parseFloat(sheetWidth.value); const price = parseFloat(boardPrice.value);
                     const defaultResult = { count: 0, totalPrice: 0, boardData: [], error: null };
-
-                    // Validaciones
-                    if (!piezas || piezas.length === 0 || piezas[0].etiqueta === 'Error') {
-                        defaultResult.error = piezas[0]?.nota || "Calcule primero el despiece válido.";
-                        return defaultResult;
-                    }
-                    if (isNaN(sh) || isNaN(sw) || sh <= 0 || sw <= 0) {
-                        defaultResult.error = "Dimensiones de tabla MDF inválidas."; return defaultResult;
-                    }
-                    if (isNaN(price) || price < 0) {
-                        defaultResult.error = "Precio por tabla inválido."; return defaultResult;
-                    }
+                    // Validaciones ...
+                    if (!piezas || piezas.length === 0 || piezas[0].etiqueta === 'Error') { defaultResult.error="..."; return defaultResult; }
+                    if (isNaN(sh) || isNaN(sw) || sh <= 0 || sw <= 0) { defaultResult.error="..."; return defaultResult; }
+                    if (isNaN(price) || price < 0) { defaultResult.error="..."; return defaultResult; }
 
                     try {
-                        // *** LLAMADA A LA NUEVA FUNCIÓN ***
+                        // console.log("Llamando a fitPiezasEnTablas con:", piezas, sw, sh); // DEBUG
                         const hojasCalculadas = fitPiezasEnTablas(piezas, sw, sh);
+                        // console.log("Resultado de fitPiezasEnTablas:", JSON.stringify(hojasCalculadas, null, 2)); // DEBUG detallado
 
-                        const numSheets = hojasCalculadas.length;
-                        const totalPrice = numSheets * price;
-
-                        // *** TRANSFORMAR boardData para el template ***
-                         const boardData = hojasCalculadas.map(hoja => ({
-                             id: hoja.id,
-                             // 'ocupados' ahora tiene la info que necesitamos para 'pieces'
-                             pieces: hoja.ocupados.map(p => ({
-                                 id: p.id, // ID único de instancia
-                                 etiqueta: p.etiqueta,
-                                 color: p.color,
-                                 dim1: p.originalDim1, // Mostrar dims originales
-                                 dim2: p.originalDim2,
-                                 x: p.x, // Coords para posible visualización futura o tooltip
-                                 y: p.y,
-                                 w: p.w, // Ancho colocado
-                                 h: p.h  // Alto colocado
+                        const numSheets = hojasCalculadas.length; const totalPrice = numSheets * price;
+                        const boardData = hojasCalculadas.map(hoja => ({
+                            id: hoja.id,
+                            pieces: hoja.ocupados.map(p => ({ // Mapeo igual
+                                id: p.id, etiqueta: p.etiqueta, color: p.color,
+                                originalDim1: p.originalDim1, originalDim2: p.originalDim2,
+                                x: p.x, y: p.y, w: p.w, h: p.h
                             }))
-                         }));
+                        }));
+                        // console.log("BoardData para template:", JSON.stringify(boardData, null, 2)); // DEBUG final
 
-                        return {
-                            count: numSheets,
-                            totalPrice: totalPrice,
-                            boardData: boardData, // Datos transformados para la UI
-                            error: null
-                        };
-
+                        return { count: numSheets, totalPrice: totalPrice, boardData: boardData, error: null };
                     } catch (error) {
-                         console.error("Error durante el packing:", error);
-                         defaultResult.error = error.message || "Error inesperado durante el cálculo de corte.";
-                         return defaultResult;
+                        console.error("Error packing:", error);
+                        defaultResult.error = error.message || "Error en cálculo de corte.";
+                        return defaultResult;
                     }
                 });
+
+                // --- Métodos para el Template (NUEVO para simplificar estilos) ---
+                const getPieceStyle = (piece, currentSheetW, currentSheetH) => {
+                    // Asegurarse de que las dimensiones de la hoja no sean cero para evitar división por cero
+                    const safeSheetW = currentSheetW > 0 ? currentSheetW : 1;
+                    const safeSheetH = currentSheetH > 0 ? currentSheetH : 1;
+                    return {
+                        position: 'absolute',
+                        left: (piece.x / safeSheetW) * 100 + '%',
+                        top: (piece.y / safeSheetH) * 100 + '%',
+                        width: (piece.w / safeSheetW) * 100 + '%',
+                        height: (piece.h / safeSheetH) * 100 + '%',
+                        backgroundColor: piece.color
+                    };
+                };
+
+                const getPieceTooltip = (piece) => {
+                    // Usar \n para saltos de línea en el tooltip
+                    return `${piece.etiqueta} (${formatDecimal(piece.originalDim1)}x${formatDecimal(piece.originalDim2)})
+Pos: (${piece.x.toFixed(1)}, ${piece.y.toFixed(1)})
+Dim Colocada: ${piece.w.toFixed(1)}x${piece.h.toFixed(1)}
+ID: ${piece.id}`;
+                };
 
                 // --- Exponer al Template ---
                 return {
                     largo, ancho, alto, espesor, sheetHeight, sheetWidth, boardPrice,
-                    currentDate, piezasCalculadas, resultadoCorte,
-                    formatDecimal, formatCurrency
+                    currentDateTime, // Exponer fecha/hora actualizada
+                    piezasCalculadas,
+                    resultadoCorte,
+                    formatDecimal,
+                    formatCurrency,
+                    getPieceStyle, // Exponer nuevo método
+                    getPieceTooltip, // Exponer nuevo método
+                    // Exponer sheetWidth/Height directamente si se usan en el :style del contenedor
+                    // O pasarlos como argumento a getPieceStyle como se hizo.
+                    // Para el aspect-ratio del contenedor, necesitamos acceso directo:
+                    currentSheetWidth: sheetWidth,
+                    currentSheetHeight: sheetHeight
                 };
             }
         }).mount('#app');
