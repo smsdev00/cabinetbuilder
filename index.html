@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora de Mueble - Plano de Corte v1.5 (Puertas 3D Interactivas)</title> <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <title>Calculadora de Mueble - Plano de Corte v1.9 (Visibilidad Directa OK)</title> <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <style>
-        /* --- Estilos existentes --- */
+        /* --- Estilos --- */
         #app { max-width: 1100px; }
         .table th, .table td { vertical-align: middle; }
         .card { margin-bottom: 1.5rem; }
@@ -15,19 +15,25 @@
         .placed-piece { position: absolute; border: 1px solid rgba(0, 0, 0, 0.7); box-sizing: border-box; overflow: hidden; min-width: 1px; min-height: 1px; display: flex; align-items: center; justify-content: center; color: white; font-size: 0.7rem; font-weight: bold; text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.8); text-align: center; line-height: 1; user-select: none; }
         .board-header { font-weight: bold; margin-bottom: 5px; text-align: center; }
         .piece-tooltip-content { white-space: pre; }
-
-        /* --- Estilos Visor 3D --- */
-        #renderer-container { position: relative; width: 100%; height: 400px; background-color: #f0f0f0; border: 1px solid #ccc; margin-top: 1.5rem; /* margin-bottom: 1.5rem; */ border-radius: 5px; overflow: hidden; }
+        #renderer-container { position: relative; width: 100%; height: 400px; background-color: #f0f0f0; border: 1px solid #ccc; margin-top: 1.5rem; border-radius: 5px; overflow: hidden; }
         #renderer-container canvas { display: block; width: 100% !important; height: 100% !important; }
         .renderer-placeholder { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #999; font-style: italic; text-align: center; }
-        /* --- NUEVO: Estilos controles puertas --- */
-        .door-controls { margin-top: 0.5rem; margin-bottom: 1.5rem; text-align: center; }
+        .visibility-controls { margin-top: 1rem; margin-bottom: 1.5rem; padding: 1rem; background-color: #f8f9fa; border: 1px solid #dee2e6; border-radius: 0.375rem; }
+        .visibility-controls .control-section { margin-bottom: 1rem; }
+        /* Asegurar espacio adecuado para el switch */
+        .visibility-controls .form-check.form-switch { padding-left: 3.5em; /* Aumentar padding para acomodar el switch */ margin-bottom: 0.75rem; }
+        .visibility-controls .form-check-input { width: 2.5em; margin-left: -3.5em; } /* Ajustar tamaño y margen negativo */
+        .visibility-controls .form-check-label { margin-left: 0.5rem; } /* Mantener label a la derecha */
 
+        .door-controls { margin-top: 1rem; }
+        .door-controls .btn { margin-right: 0.5rem; margin-bottom: 0.5rem; }
     </style>
 </head>
 <body>
     <div id="app" class="container mt-4 mb-5">
-        <h1 class="mb-4 text-center">Calculadora de Mueble - Plano de Corte Estimado v1.5 (Puertas 3D Interactivas)</h1> <div class="row">
+        <h1 class="mb-4 text-center">Calculadora de Mueble - Plano de Corte Estimado v1.9 (Visibilidad Directa OK)</h1>
+
+        <div class="row">
              <div class="col-lg-6">
                  <div class="card shadow-sm h-100">
                      <div class="card-header">1. Dimensiones del Mueble y Material</div>
@@ -55,52 +61,72 @@
             <div class="card-header">3. Resultados del Cálculo y Visualización</div>
             <div class="card-body">
                 <div class="text-center mb-4 p-3 bg-light rounded border">
-                     <span class="resultado-tablas">Tablas MDF: {{ resultadoCorte.count >= 0 ? resultadoCorte.count : 'N/A' }}</span>
-                     <span class="resultado-precio">Costo Total: {{ formatCurrency(resultadoCorte.totalPrice) }}</span>
-                     <p v-if="resultadoCorte.count > 0 && !resultadoCorte.error" class="text-muted small mt-2 mb-0">Estimación con packer simplificado. El layout real y costo pueden variar.</p>
-                     <p v-if="resultadoCorte.error" class="text-danger small mt-2 mb-0"><strong>Error:</strong> {{ resultadoCorte.error }}</p>
-                 </div>
-                 <div class="construction-note">
-                      <p class="mb-1 fw-bold">Método de Construcción Asumido (para despiece y 3D):</p>
-                      <ul class="mb-0" style="padding-left: 1.2em;">
-                          <li>Laterales (L): Tienen Alto (H) y Ancho (A - profundidad) total.</li>
-                          <li>Base (B) / Tapa (T): Tienen Largo (L) y Ancho (A - profundidad) total externo.</li>
-                          <li>Puertas (P - x2): Tienen Alto (H) total, ancho calculado para dejar luz, encajan <strong>entre</strong> los laterales (Ancho útil = L - 2*Espesor). Rotan sobre eje vertical en borde externo.</li>
-                          <li>Trasera (R): Tiene Alto (H) total, encaja <strong>entre</strong> los laterales (Ancho = L - 2*Espesor).</li>
-                      </ul>
-                  </div>
+                    <span class="resultado-tablas">Tablas MDF: {{ resultadoCorte.count >= 0 ? resultadoCorte.count : 'N/A' }}</span>
+                    <span class="resultado-precio">Costo Total: {{ formatCurrency(resultadoCorte.totalPrice) }}</span>
+                    <p v-if="resultadoCorte.count > 0 && !resultadoCorte.error" class="text-muted small mt-2 mb-0">Estimación con packer simplificado. El layout real y costo pueden variar.</p>
+                    <p v-if="resultadoCorte.error" class="text-danger small mt-2 mb-0"><strong>Error:</strong> {{ resultadoCorte.error }}</p>
+                </div>
+                <div class="construction-note">
+                    <p class="mb-1 fw-bold">Método de Construcción Asumido (para despiece y 3D):</p>
+                    <ul class="mb-0" style="padding-left: 1.2em;">
+                         <li>Laterales (L): Tienen Alto (H) y Ancho (A - profundidad) total.</li>
+                         <li>Base (B) / Tapa (T): Tienen Largo (L) y Ancho (A - profundidad) total externo.</li>
+                         <li>Puertas (P - x2): Tienen Alto (H) total, ancho calculado para dejar luz, encajan <strong>entre</strong> los laterales (Ancho útil = L - 2*Espesor). Van montadas al frente.</li>
+                         <li>Trasera (R): Tiene Alto (H) total, encaja <strong>entre</strong> los laterales (Ancho = L - 2*Espesor). Va montada atrás.</li>
+                    </ul>
+                </div>
 
-                <h3 class="fs-5 mt-4 mb-1 text-center">Visualización 3D Interactiva</h3>
+                <h3 class="fs-5 mt-4 mb-1 text-center">Visualización 3D</h3>
                 <div id="renderer-container" ref="rendererContainer">
                     <div v-if="!isRendererReady" class="renderer-placeholder">Cargando visor 3D...</div>
                     <div v-if="isRendererReady && renderError" class="renderer-placeholder text-danger">Error al generar 3D: {{ renderError }}</div>
                 </div>
 
-                 <div class="door-controls form-check-inline">
-                    <div class="form-check form-check-inline">
-                      <input class="form-check-input" type="checkbox" id="checkPuertaIzq" v-model="isLeftDoorOpen">
-                      <label class="form-check-label" for="checkPuertaIzq">Abrir Puerta Izquierda</label>
+                <div class="visibility-controls">
+                    <div class="row">
+                        <div class="col-md-6 control-section">
+                            <h4 class="fs-6 mb-3 text-center">Controles de Visibilidad</h4>
+                            <div v-if="!isRendererReady" class="text-center text-muted fst-italic">
+                                Generando controles...
+                            </div>
+                            <template v-else>
+                                <div class="form-check form-switch" v-for="(visible, type) in pieceTypeVisibility" :key="type">
+                                    <input class="form-check-input" type="checkbox" :id="'check-' + type" v-model="pieceTypeVisibility[type]">
+                                    <label class="form-check-label" :for="'check-' + type">Mostrar {{ type === 'Lateral' || type === 'Puerta' ? type + 'es' : type }}</label>
+                                </div>
+                            </template>
+                        </div>
+                        <div class="col-md-6 control-section">
+                             <h4 class="fs-6 mb-3 text-center">Controles de Puertas</h4>
+                             <div v-if="!isRendererReady" class="text-center text-muted fst-italic">
+                                Esperando modelo 3D...
+                            </div>
+                             <div v-else class="door-controls text-center">
+                                 <button @click="toggleDoorLeft" class="btn btn-sm btn-outline-primary" :disabled="!pieceTypeVisibility['Puerta']">
+                                     {{ isDoorLeftOpen ? 'Cerrar' : 'Abrir' }} Puerta Izq.
+                                 </button>
+                                 <button @click="toggleDoorRight" class="btn btn-sm btn-outline-primary" :disabled="!pieceTypeVisibility['Puerta']">
+                                     {{ isDoorRightOpen ? 'Cerrar' : 'Abrir' }} Puerta Der.
+                                 </button>
+                             </div>
+                        </div>
                     </div>
-                    <div class="form-check form-check-inline">
-                      <input class="form-check-input" type="checkbox" id="checkPuertaDer" v-model="isRightDoorOpen">
-                      <label class="form-check-label" for="checkPuertaDer">Abrir Puerta Derecha</label>
-                    </div>
-                 </div>
+                </div>
 
                 <h3 class="fs-5 mt-4 mb-3 text-center">Despiece Detallado del Mueble</h3>
                  <div class="table-responsive mb-4">
-                    <table class="table table-striped table-bordered table-hover table-sm">
-                        <thead class="table-dark"><tr><th>Etiqueta</th><th>Cód.</th><th>Cantidad</th><th>Medida 1 (cm)</th><th>Medida 2 (cm)</th><th>Color Ref.</th><th>Notas</th></tr></thead>
-                        <tbody>
-                            <tr v-if="piezasCalculadas.length === 0 || piezasCalculadas[0].etiqueta === 'Error'"><td colspan="7" class="text-center fst-italic">{{ piezasCalculadas.length > 0 ? piezasCalculadas[0].dim1 : 'Ingrese dimensiones válidas.' }}</td></tr>
-                            <tr v-else v-for="pieza in piezasCalculadas" :key="pieza.etiqueta + pieza.dim1 + pieza.dim2">
-                                <td :style="{borderLeft: `5px solid ${pieza.color}`}">{{ pieza.etiqueta }}</td> <td class="fw-bold">{{ pieza.shortCode }}</td> <td>{{ pieza.cantidad }}</td> <td>{{ formatDecimal(pieza.dim1) }}</td> <td>{{ formatDecimal(pieza.dim2) }}</td> <td><span :style="{ backgroundColor: pieza.color, padding: '2px 8px', borderRadius: '3px' }">&nbsp;</span></td> <td>{{ pieza.nota || '-' }}</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                     <table class="table table-striped table-bordered table-hover table-sm">
+                         <thead class="table-dark"><tr><th>Etiqueta</th><th>Cód.</th><th>Cantidad</th><th>Medida 1 (cm)</th><th>Medida 2 (cm)</th><th>Color Ref.</th><th>Notas</th></tr></thead>
+                         <tbody>
+                             <tr v-if="piezasCalculadas.length === 0 || piezasCalculadas[0].etiqueta === 'Error'"><td colspan="7" class="text-center fst-italic">{{ piezasCalculadas.length > 0 ? piezasCalculadas[0].dim1 : 'Ingrese dimensiones válidas.' }}</td></tr>
+                             <tr v-else v-for="pieza in piezasCalculadas" :key="pieza.etiqueta + pieza.dim1 + pieza.dim2">
+                                 <td :style="{borderLeft: `5px solid ${pieza.color}`}">{{ pieza.etiqueta }}</td> <td class="fw-bold">{{ pieza.shortCode }}</td> <td>{{ pieza.cantidad }}</td> <td>{{ formatDecimal(pieza.dim1) }}</td> <td>{{ formatDecimal(pieza.dim2) }}</td> <td><span :style="{ backgroundColor: pieza.color, padding: '2px 8px', borderRadius: '3px' }">&nbsp;</span></td> <td>{{ pieza.nota || '-' }}</td>
+                             </tr>
+                         </tbody>
+                     </table>
                  </div>
 
-                <h3 class="fs-4 mt-5 mb-4 text-center">Planos de Corte Estimados</h3>
+                 <h3 class="fs-4 mt-5 mb-4 text-center">Planos de Corte Estimados</h3>
                  <p v-if="resultadoCorte.count > 0 && !resultadoCorte.error" class="text-center text-muted small mb-4">Representación visual basada en el packer simplificado. NO considera ancho de corte (kerf).</p>
                  <div v-if="resultadoCorte.boardData && resultadoCorte.boardData.length > 0 && !resultadoCorte.error" class="row">
                      <div v-for="board in resultadoCorte.boardData" :key="board.id" class="col-lg-6 mb-4">
@@ -115,235 +141,175 @@
         </div>
 
         <p class="text-center text-muted mt-4 small">
-             {{ currentDateTime }} <br> San Carlos, Buenos Aires, Argentina
-         </p>
+            Desarrollado por smsdev00 - Licencia MIT
+       </p>
     </div>
 
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" integrity="sha512-dLxUelApnYxpLt6K2iomGngnHO83iUvZytA3YjDUCjT0HDkz5vzFTTLRh_kW4ZBUP7btHCWWPd0zZoXzSCJR9A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script type="importmap">
         { "imports": { "three": "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.module.min.js", "three/addons/": "https://unpkg.com/three@0.128.0/examples/jsm/" } }
     </script>
+
     <script type="module">
         import * as THREE from 'three';
         import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
-        // Añadido markRaw
         const { createApp, ref, computed, onMounted, onBeforeUnmount, watch, nextTick, markRaw } = Vue;
 
         createApp({
             setup() {
-                // --- Estado Reactivo (Existente) ---
+                // --- Estados y Funciones Auxiliares (SIN CAMBIOS desde v1.7 corregida) ---
                 const largo = ref(80); const ancho = ref(80); const alto = ref(140);
-                const espesor = ref(18); const sheetHeight = ref(260); const sheetWidth = ref(183);
-                const boardPrice = ref(25000); const currentDateTime = ref('');
+                const espesor = ref(9); const sheetHeight = ref(260); const sheetWidth = ref(183);
+                const boardPrice = ref(25000);
                 const LUZ_ENTRE_PUERTAS_CM = ref(0.3);
-
-                // --- Estado para 3D (Existente) ---
                 const rendererContainer = ref(null); const scene = ref(null);
                 const camera = ref(null); const renderer = ref(null); const controls = ref(null);
                 const furnitureGroup = ref(null); const isRendererReady = ref(false);
                 const renderError = ref(null); let animationFrameId = null;
-
-                // --- NUEVO: Estado para Puertas Interactivas ---
-                const isLeftDoorOpen = ref(false);
-                const isRightDoorOpen = ref(false);
-                const leftDoorPivot = ref(null); // Ref al grupo pivote de la puerta izquierda
-                const rightDoorPivot = ref(null); // Ref al grupo pivote de la puerta derecha
-                const leftDoorTargetRotation = ref(0); // Rotación Y objetivo
-                const rightDoorTargetRotation = ref(0); // Rotación Y objetivo
-                const DOOR_OPEN_ANGLE = Math.PI * 100 / 180; // Ángulo de apertura (100 grados)
-
-                // --- Mapeos y Funciones Auxiliares (sin cambios) ---
+                const doorLeftPivotRef = ref(null);
+                const doorRightPivotRef = ref(null);
+                const pieceTypeVisibility = ref({ Base: true, Tapa: true, Lateral: true, Puerta: true, Trasera: true });
+                const isDoorLeftOpen = ref(false);
+                const isDoorRightOpen = ref(false);
+                const doorOpenAngle = Math.PI / 1.8;
                 const colorMap = { 'Base': '#dc3545', 'Tapa': '#fd7e14', 'Lateral': '#ffc107', 'Puerta': '#6f42c1', 'Trasera': '#0d6efd', 'Error': '#6c757d' };
                 const shortCodeMap = { 'Base': 'B', 'Tapa': 'T', 'Lateral': 'L', 'Puerta': 'P', 'Trasera': 'R', 'Error': 'ERR' };
                 const formatDecimal = (value) => typeof value === 'number' ? value.toFixed(1) : value;
                 const formatCurrency = (value) => { if (typeof value !== 'number' || isNaN(value)) return '$ --.--'; return `$ ${value.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`; };
-                const updateDateTime = () => {
-                    // Get current date and time in specified timezone
-                    const now = new Date();
-                    const options = {
-                        timeZone: 'America/Argentina/Buenos_Aires',
-                        dateStyle: 'long',
-                        timeStyle: 'medium',
-                        hour12: false // Use 24-hour format if preferred
-                    };
-                    // Format the date and time
-                    currentDateTime.value = now.toLocaleString('es-AR', options);
-                    // Add timezone info if desired
-                    // const timezoneOffset = now.getTimezoneOffset();
-                    // const offsetHours = String(Math.abs(Math.floor(timezoneOffset / 60))).padStart(2, '0');
-                    // const offsetMinutes = String(Math.abs(timezoneOffset % 60)).padStart(2, '0');
-                    // const offsetSign = timezoneOffset <= 0 ? '+' : '-';
-                    // currentDateTime.value += ` (GMT${offsetSign}${offsetHours}:${offsetMinutes})`;
-                };
-                updateDateTime();
-                setInterval(updateDateTime, 60000);
-
-                // --- Función de Packing (sin cambios) ---
                 function fitPiezasEnTablas(piezasInput, sheetWidth, sheetHeight) { const hojas = []; let globalPieceIdCounter = 1; function crearHoja(id){ return { id: id, ocupados: [], espacios: [{ x: 0, y: 0, w: sheetWidth, h: sheetHeight }] }; } function puedeColocar(pw, ph, sp){ const cn=pw<=sp.w&&ph<=sp.h; const cr=ph<=sp.w&&pw<=sp.h; return {cabe:cn||cr, necesitaRotar:!cn&&cr}; } function colocarPiezaEnHoja(hoja, pOrig){ let mejorIdx=-1, rotar=false; for(let i=0; i<hoja.espacios.length; i++){ const sp=hoja.espacios[i]; const {cabe,necesitaRotar}=puedeColocar(pOrig.w,pOrig.h,sp); if(cabe){mejorIdx=i; rotar=necesitaRotar; break;}} if(mejorIdx!==-1){ const sp=hoja.espacios[mejorIdx]; const rt=rotar; const w=rt?pOrig.h:pOrig.w; const h=rt?pOrig.w:pOrig.h; hoja.ocupados.push({ id: pOrig.id, x: sp.x, y: sp.y, w: w, h: h, etiqueta: pOrig.etiqueta, color: pOrig.color, shortCode: pOrig.shortCode, originalDim1: pOrig.originalDim1, originalDim2: pOrig.originalDim2 }); hoja.espacios.splice(mejorIdx,1); if(sp.w-w > 0.1) hoja.espacios.push({x:sp.x+w, y:sp.y, w:sp.w-w, h:h}); if(sp.h-h > 0.1) hoja.espacios.push({x:sp.x, y:sp.y+h, w:sp.w, h:sp.h-h}); return true; } return false; } let todas=[]; for(const pIn of piezasInput){ const pw=pIn.dim1; const ph=pIn.dim2; if(!((pw<=sheetHeight&&ph<=sheetWidth)||(pw<=sheetWidth&&ph<=sheetHeight))) throw new Error(`Pieza ${pIn.etiqueta} (${formatDecimal(pw)}x${formatDecimal(ph)}) no cabe.`); for(let i=0; i<pIn.cantidad; i++) todas.push({ id:globalPieceIdCounter++, w:pw, h:ph, area:pw*ph, etiqueta:pIn.etiqueta, color:pIn.color, shortCode: pIn.shortCode, originalDim1:pw, originalDim2:ph }); } todas.sort((a,b) => Math.max(b.w, b.h) - Math.max(a.w, a.h) || b.area - a.area); for(const p of todas){ let colocada=false; for(const h of hojas){if(colocarPiezaEnHoja(h,p)){colocada=true; break;}} if(!colocada){ const nH=crearHoja(hojas.length+1); if(colocarPiezaEnHoja(nH,p)) { hojas.push(nH); } else { throw new Error(`Error crítico: No se pudo colocar pieza ${p.etiqueta} (${formatDecimal(p.w)}x${formatDecimal(p.h)}) en hoja nueva.`); } } } return hojas; }
+                const piezasCalculadas = computed(() => { const L = parseFloat(largo.value); const A = parseFloat(ancho.value); const H = parseFloat(alto.value); const E_mm = parseFloat(espesor.value); const luz = parseFloat(LUZ_ENTRE_PUERTAS_CM.value); if (isNaN(L) || isNaN(A) || isNaN(H) || isNaN(E_mm) || L <= 0 || A <= 0 || H <= 0 || E_mm <= 0 || isNaN(luz) || luz < 0) { return []; } const E_cm = E_mm / 10; if (L <= 2 * E_cm) return [{ etiqueta: 'Error', cantidad: '-', dim1: 'Largo insuficiente', dim2: '-', nota: 'Ajuste medidas', color: colorMap['Error'], shortCode: shortCodeMap['Error'] }]; if (H <= 2 * E_cm) return [{ etiqueta: 'Error', cantidad: '-', dim1: 'Alto insuficiente', dim2: '-', nota: 'Ajuste medidas', color: colorMap['Error'], shortCode: shortCodeMap['Error'] }]; const anchoTotalFrente = L - (2 * E_cm); const anchoDisponibleParaPuertas = anchoTotalFrente - luz; const anchoPuerta = anchoDisponibleParaPuertas / 2; if (anchoPuerta <= 0.1) return [{ etiqueta: 'Error', cantidad: '-', dim1: 'Ancho puertas insuficiente', dim2: '-', nota: 'Ajuste Largo o Espesor', color: colorMap['Error'], shortCode: shortCodeMap['Error'] }]; const piezasBase = [ { etiqueta: 'Base', cantidad: 1, dim1: L, dim2: A, nota: 'Pieza inferior' }, { etiqueta: 'Tapa', cantidad: 1, dim1: L, dim2: A, nota: 'Pieza superior' }, { etiqueta: 'Lateral', cantidad: 2, dim1: H, dim2: A, nota: 'Caras laterales' }, { etiqueta: 'Puerta', cantidad: 2, dim1: H, dim2: anchoPuerta, nota: `Frontal (${formatDecimal(luz)}cm luz)` }, { etiqueta: 'Trasera', cantidad: 1, dim1: H, dim2: L - (2 * E_cm), nota: 'Posterior (entre laterales)' } ]; return piezasBase .filter(p => p.dim1 > 0.1 && p.dim2 > 0.1) .map(p => ({ ...p, color: colorMap[p.etiqueta] || '#6c757d', shortCode: shortCodeMap[p.etiqueta] || '?' })); });
+                const resultadoCorte = computed(() => { const piezas = piezasCalculadas.value; const sh = parseFloat(sheetHeight.value); const sw = parseFloat(sheetWidth.value); const price = parseFloat(boardPrice.value); const defaultResult = { count: -1, totalPrice: 0, boardData: [], error: null }; if (!piezas || piezas.length === 0) { defaultResult.error="Ingrese dimensiones válidas."; return defaultResult; } if (piezas[0].etiqueta === 'Error') { defaultResult.error = piezas[0].dim1; return defaultResult; } if (isNaN(sh) || isNaN(sw) || sh <= 0 || sw <= 0) { defaultResult.error="Dimensiones de tabla inválidas."; return defaultResult; } if (isNaN(price) || price < 0) { defaultResult.error="Precio por tabla inválido."; return defaultResult; } try { const hojasCalculadas = fitPiezasEnTablas(piezas, sw, sh); const numSheets = hojasCalculadas.length; const totalPrice = numSheets * price; const boardData = hojasCalculadas.map(hoja => ({ id: hoja.id, pieces: hoja.ocupados.map(p => ({ id: p.id, etiqueta: p.etiqueta, color: p.color, shortCode: p.shortCode, originalDim1: p.originalDim1, originalDim2: p.originalDim2, x: p.x, y: p.y, w: p.w, h: p.h })) })); return { count: numSheets, totalPrice: totalPrice, boardData: boardData, error: null }; } catch (error) { console.error("Error en el packing:", error); defaultResult.error = error.message || "Error desconocido en cálculo de corte."; defaultResult.count = 0; defaultResult.boardData = []; return defaultResult; } });
+                const getPieceStyle = (piece, currentSheetW, currentSheetH) => { const safeSheetW = currentSheetW > 0 ? currentSheetW : 1; const safeSheetH = currentSheetH > 0 ? currentSheetH : 1; const widthPerc = Math.max((piece.w / safeSheetW) * 100, 0.1); const heightPerc = Math.max((piece.h / safeSheetH) * 100, 0.1); return { position: 'absolute', left: (piece.x / safeSheetW) * 100 + '%', top: (piece.y / safeSheetH) * 100 + '%', width: widthPerc + '%', height: heightPerc + '%', backgroundColor: piece.color }; };
+                const getPieceTooltip = (piece) => { return `${piece.etiqueta} (${formatDecimal(piece.originalDim1)} x ${formatDecimal(piece.originalDim2)} cm)\nPos: (${formatDecimal(piece.x)}, ${formatDecimal(piece.y)})\nDim Colocada: ${formatDecimal(piece.w)} x ${formatDecimal(piece.h)}\nID: ${piece.id}`; };
+                const toggleDoorLeft = () => { isDoorLeftOpen.value = !isDoorLeftOpen.value; };
+                const toggleDoorRight = () => { isDoorRightOpen.value = !isDoorRightOpen.value; };
+                function fitCameraToObject( camera, object, controls, offset = 1.5 ) { const boundingBox = new THREE.Box3(); boundingBox.setFromObject( object ); const center = new THREE.Vector3(); boundingBox.getCenter( center ); const size = new THREE.Vector3(); boundingBox.getSize( size ); const maxDim = Math.max( size.x, size.y, size.z ); const fov = camera.fov * ( Math.PI / 180 ); let cameraZ = Math.abs( maxDim / 2 / Math.tan( fov / 2 ) ); cameraZ *= offset; camera.position.x = center.x + cameraZ * 0.7; camera.position.y = center.y + cameraZ * 0.5; camera.position.z = center.z + cameraZ; const minZ = boundingBox.min.z; const cameraToFarEdge = ( minZ < 0 ) ? -minZ + cameraZ : cameraZ - minZ; camera.far = cameraToFarEdge * 3; camera.updateProjectionMatrix(); if ( controls ) { controls.target.copy( center ); controls.saveState(); controls.update(); } }
+                function onWindowResize() { if (!camera.value || !renderer.value || !rendererContainer.value) return; const container = rendererContainer.value; camera.value.aspect = container.clientWidth / container.clientHeight; camera.value.updateProjectionMatrix(); renderer.value.setSize(container.clientWidth, container.clientHeight); }
 
-                // --- piezasCalculadas y resultadoCorte (sin cambios lógicos) ---
-                const piezasCalculadas = computed(() => { /* ... código sin cambios ... */
-                    const L = parseFloat(largo.value); const A = parseFloat(ancho.value);
-                    const H = parseFloat(alto.value); const E_mm = parseFloat(espesor.value);
-                    const luz = parseFloat(LUZ_ENTRE_PUERTAS_CM.value);
-                    if (isNaN(L) || isNaN(A) || isNaN(H) || isNaN(E_mm) || L <= 0 || A <= 0 || H <= 0 || E_mm <= 0 || isNaN(luz) || luz < 0) { return []; }
-                    const E_cm = E_mm / 10;
-                    if (L <= 2 * E_cm) return [{ etiqueta: 'Error', cantidad: '-', dim1: 'Largo insuficiente para estructura', dim2: '-', nota: 'Ajuste medidas', color: colorMap['Error'], shortCode: shortCodeMap['Error'] }];
-                    if (H <= 2 * E_cm) return [{ etiqueta: 'Error', cantidad: '-', dim1: 'Alto insuficiente para estructura', dim2: '-', nota: 'Ajuste medidas', color: colorMap['Error'], shortCode: shortCodeMap['Error'] }];
-                    const anchoTotalFrente = L - (2 * E_cm);
-                    const anchoDisponibleParaPuertas = anchoTotalFrente - luz;
-                    const anchoPuerta = anchoDisponibleParaPuertas / 2;
-                    if (anchoPuerta <= 0.1) return [{ etiqueta: 'Error', cantidad: '-', dim1: 'Ancho insuficiente para puertas + luz', dim2: '-', nota: 'Ajuste Largo o Espesor', color: colorMap['Error'], shortCode: shortCodeMap['Error'] }];
-                    const piezasBase = [ { etiqueta: 'Base', cantidad: 1, dim1: L, dim2: A, nota: 'Pieza inferior' }, { etiqueta: 'Tapa', cantidad: 1, dim1: L, dim2: A, nota: 'Pieza superior' }, { etiqueta: 'Lateral', cantidad: 2, dim1: H, dim2: A, nota: 'Caras laterales' }, { etiqueta: 'Puerta', cantidad: 2, dim1: H, dim2: anchoPuerta, nota: `Frontal (${formatDecimal(luz)}cm luz)` }, { etiqueta: 'Trasera', cantidad: 1, dim1: H, dim2: L - (2 * E_cm), nota: 'Posterior (entre laterales)' } ];
-                    return piezasBase .filter(p => p.dim1 > 0.1 && p.dim2 > 0.1) .map(p => ({ ...p, color: colorMap[p.etiqueta] || '#6c757d', shortCode: shortCodeMap[p.etiqueta] || '?' }));
-                });
-                const resultadoCorte = computed(() => { /* ... código sin cambios ... */
-                     const piezas = piezasCalculadas.value; const sh = parseFloat(sheetHeight.value); const sw = parseFloat(sheetWidth.value); const price = parseFloat(boardPrice.value); const defaultResult = { count: -1, totalPrice: 0, boardData: [], error: null }; if (!piezas || piezas.length === 0) { defaultResult.error="Ingrese dimensiones válidas para el mueble."; return defaultResult; } if (piezas[0].etiqueta === 'Error') { defaultResult.error = piezas[0].dim1; return defaultResult; } if (isNaN(sh) || isNaN(sw) || sh <= 0 || sw <= 0) { defaultResult.error="Dimensiones de tabla inválidas."; return defaultResult; } if (isNaN(price) || price < 0) { defaultResult.error="Precio por tabla inválido."; return defaultResult; } try { const hojasCalculadas = fitPiezasEnTablas(piezas, sw, sh); const numSheets = hojasCalculadas.length; const totalPrice = numSheets * price; const boardData = hojasCalculadas.map(hoja => ({ id: hoja.id, pieces: hoja.ocupados.map(p => ({ id: p.id, etiqueta: p.etiqueta, color: p.color, shortCode: p.shortCode, originalDim1: p.originalDim1, originalDim2: p.originalDim2, x: p.x, y: p.y, w: p.w, h: p.h })) })); return { count: numSheets, totalPrice: totalPrice, boardData: boardData, error: null }; } catch (error) { console.error("Error en el packing:", error); defaultResult.error = error.message || "Error desconocido en cálculo de corte."; defaultResult.count = 0; defaultResult.boardData = []; return defaultResult; }
-                 });
-
-                 // --- Métodos Template Plano Corte (sin cambios) ---
-                const getPieceStyle = (piece, currentSheetW, currentSheetH) => { /* ... código sin cambios ... */ const safeSheetW = currentSheetW > 0 ? currentSheetW : 1; const safeSheetH = currentSheetH > 0 ? currentSheetH : 1; const widthPerc = Math.max((piece.w / safeSheetW) * 100, 0.1); const heightPerc = Math.max((piece.h / safeSheetH) * 100, 0.1); return { position: 'absolute', left: (piece.x / safeSheetW) * 100 + '%', top: (piece.y / safeSheetH) * 100 + '%', width: widthPerc + '%', height: heightPerc + '%', backgroundColor: piece.color }; };
-                const getPieceTooltip = (piece) => { /* ... código sin cambios ... */ return `${piece.etiqueta} (${formatDecimal(piece.originalDim1)} x ${formatDecimal(piece.originalDim2)} cm)\nPos: (${formatDecimal(piece.x)}, ${formatDecimal(piece.y)})\nDim Colocada: ${formatDecimal(piece.w)} x ${formatDecimal(piece.h)}\nID: ${piece.id}`; };
-
-                // --- Lógica de Three.js ---
-
-                function initThreeJS() { /* ... código con markRaw sin cambios ... */
-                    if (!rendererContainer.value || !THREE) return; try { const _scene = new THREE.Scene(); _scene.background = new THREE.Color(0xf0f0f0); scene.value = markRaw(_scene); const container = rendererContainer.value; const aspect = container.clientWidth / container.clientHeight; const _camera = new THREE.PerspectiveCamera(50, aspect, 1, 2000); _camera.position.set(100, 100, 150); camera.value = markRaw(_camera); scene.value.add(new THREE.AmbientLight(0xffffff, 0.6)); const dirLight = new THREE.DirectionalLight(0xffffff, 0.8); dirLight.position.set(0.5, 1, 1); scene.value.add(dirLight); const _renderer = new THREE.WebGLRenderer({ antialias: true }); _renderer.setSize(container.clientWidth, container.clientHeight); _renderer.setPixelRatio(window.devicePixelRatio); renderer.value = markRaw(_renderer); container.appendChild(renderer.value.domElement); const _controls = new OrbitControls(camera.value, renderer.value.domElement); _controls.enableDamping = true; _controls.dampingFactor = 0.1; _controls.screenSpacePanning = false; controls.value = markRaw(_controls); const _furnitureGroup = new THREE.Group(); furnitureGroup.value = markRaw(_furnitureGroup); scene.value.add(furnitureGroup.value); animate(); isRendererReady.value = true; renderError.value = null; window.addEventListener('resize', onWindowResize); } catch (error) { console.error("Error inicializando Three.js:", error); renderError.value = "No se pudo iniciar el visor 3D."; isRendererReady.value = false; }
-                }
-
-                // MODIFICADO: animate() para incluir rotación de puertas
-                function animate() {
-                    if (!renderer.value || !scene.value || !camera.value) return;
-                    animationFrameId = requestAnimationFrame(animate);
-                    controls.value.update();
-
-                    // Interpolar rotación de puertas
-                    if (leftDoorPivot.value) {
-                        leftDoorPivot.value.rotation.y = THREE.MathUtils.lerp(
-                            leftDoorPivot.value.rotation.y,
-                            leftDoorTargetRotation.value,
-                            0.1 // Factor de interpolación (velocidad)
-                        );
-                    }
-                    if (rightDoorPivot.value) {
-                        rightDoorPivot.value.rotation.y = THREE.MathUtils.lerp(
-                            rightDoorPivot.value.rotation.y,
-                            rightDoorTargetRotation.value,
-                            0.1 // Factor de interpolación (velocidad)
-                        );
-                    }
-
+                 // --- Lógica de Three.js (initThreeJS, animate - SIN CAMBIOS desde v1.7) ---
+                 function initThreeJS() {
+                     if (!rendererContainer.value || !THREE) return;
+                     try {
+                        const _scene = new THREE.Scene(); _scene.background = new THREE.Color(0xf0f0f0); scene.value = markRaw(_scene);
+                        const container = rendererContainer.value; const aspect = container.clientWidth / container.clientHeight;
+                        const _camera = new THREE.PerspectiveCamera(50, aspect, 1, 2000); _camera.position.set(100, 100, 150); camera.value = markRaw(_camera);
+                        scene.value.add(new THREE.AmbientLight(0xffffff, 0.6)); const dirLight = new THREE.DirectionalLight(0xffffff, 0.8); dirLight.position.set(0.5, 1, 1); scene.value.add(dirLight);
+                        const _renderer = new THREE.WebGLRenderer({ antialias: true }); _renderer.setSize(container.clientWidth, container.clientHeight); _renderer.setPixelRatio(window.devicePixelRatio); renderer.value = markRaw(_renderer); container.appendChild(renderer.value.domElement);
+                        const _controls = new OrbitControls(camera.value, renderer.value.domElement); _controls.enableDamping = true; _controls.dampingFactor = 0.1; _controls.screenSpacePanning = false; controls.value = markRaw(_controls);
+                        const _furnitureGroup = new THREE.Group(); furnitureGroup.value = markRaw(_furnitureGroup); scene.value.add(furnitureGroup.value);
+                        animate(); isRendererReady.value = true; renderError.value = null; window.addEventListener('resize', onWindowResize);
+                     } catch (error) { console.error("Error inicializando Three.js:", error); renderError.value = "No se pudo iniciar el visor 3D."; isRendererReady.value = false; }
+                 }
+                 function animate() {
+                    if (!renderer.value || !scene.value || !camera.value) return; animationFrameId = requestAnimationFrame(animate); controls.value.update();
+                    const targetRotLeft = isDoorLeftOpen.value ? -doorOpenAngle : 0; const targetRotRight = isDoorRightOpen.value ? doorOpenAngle : 0; const lerpFactor = 0.1;
+                    if (doorLeftPivotRef.value) { doorLeftPivotRef.value.rotation.y = THREE.MathUtils.lerp(doorLeftPivotRef.value.rotation.y, targetRotLeft, lerpFactor); }
+                    if (doorRightPivotRef.value) { doorRightPivotRef.value.rotation.y = THREE.MathUtils.lerp(doorRightPivotRef.value.rotation.y, targetRotRight, lerpFactor); }
                     renderer.value.render(scene.value, camera.value);
-                }
+                 }
 
-                function onWindowResize() { /* ... código sin cambios ... */ if (!camera.value || !renderer.value || !rendererContainer.value) return; const container = rendererContainer.value; camera.value.aspect = container.clientWidth / container.clientHeight; camera.value.updateProjectionMatrix(); renderer.value.setSize(container.clientWidth, container.clientHeight); }
-
-                // MODIFICADO: updateFurnitureModel() para usar pivotes en puertas
+                // --- updateFurnitureModel (SIN CAMBIOS desde v1.7 corregida) ---
+                // (Esta función crea todas las piezas y ajusta su visibilidad inicial)
                 function updateFurnitureModel() {
-                    if (!isRendererReady.value || !furnitureGroup.value) return;
-                    while (furnitureGroup.value.children.length > 0) { const object = furnitureGroup.value.children[0]; if (object.geometry) object.geometry.dispose(); furnitureGroup.value.remove(object); }
-                    renderError.value = null;
-                    // Limpiar refs de pivotes anteriores
-                    leftDoorPivot.value = null;
-                    rightDoorPivot.value = null;
-
-                    const L = parseFloat(largo.value); const A = parseFloat(ancho.value);
-                    const H = parseFloat(alto.value); const E_mm = parseFloat(espesor.value);
-                    const luz = parseFloat(LUZ_ENTRE_PUERTAS_CM.value);
-
-                    if (isNaN(L) || isNaN(A) || isNaN(H) || isNaN(E_mm) || L <= 0 || A <= 0 || H <= 0 || E_mm <= 0 || isNaN(luz) || luz < 0) { renderError.value = "Dimensiones inválidas."; return; }
-                    const E_cm = E_mm / 10;
-                    if (L <= 2 * E_cm || H <= 2 * E_cm) { renderError.value = "Dimensiones insuficientes para estructura."; return; }
-                    const anchoTotalFrente = L - (2 * E_cm);
-                    const anchoDisponibleParaPuertas = anchoTotalFrente - luz;
-                    const anchoPuerta = anchoDisponibleParaPuertas / 2;
-                    if (anchoPuerta <= 0.1){ renderError.value = "Ancho insuficiente para puertas."; return; }
-
+                    // console.log("--- updateFurnitureModel START ---"); // DEBUG (opcional)
+                    if (!isRendererReady.value || !furnitureGroup.value) { return; }
+                    // console.log("Current pieceTypeVisibility:", JSON.parse(JSON.stringify(pieceTypeVisibility.value))); // DEBUG (opcional)
+                    // console.log("Clearing furnitureGroup children..."); // DEBUG (opcional)
+                    while (furnitureGroup.value.children.length > 0) { const object = furnitureGroup.value.children[0]; if (object instanceof THREE.Mesh && object.geometry) object.geometry.dispose(); furnitureGroup.value.remove(object); }
+                    doorLeftPivotRef.value = null; doorRightPivotRef.value = null; renderError.value = null;
+                    // console.log("furnitureGroup cleared."); // DEBUG (opcional)
+                    const L = parseFloat(largo.value); const A = parseFloat(ancho.value); const H = parseFloat(alto.value); const E_mm = parseFloat(espesor.value); const luz = parseFloat(LUZ_ENTRE_PUERTAS_CM.value); if (isNaN(L) || isNaN(A) || isNaN(H) || isNaN(E_mm) || L <= 0 || A <= 0 || H <= 0 || E_mm <= 0 || isNaN(luz) || luz < 0) { renderError.value = "Dimensiones inválidas."; return; } const E_cm = E_mm / 10; if (L <= 2 * E_cm || H <= 2 * E_cm) { renderError.value = "Dimensiones insuficientes."; return; } const anchoTotalFrente = L - (2 * E_cm); const anchoDisponibleParaPuertas = anchoTotalFrente - luz; const anchoPuerta = anchoDisponibleParaPuertas / 2; if (anchoPuerta <= 0.1){ renderError.value = "Ancho puertas insuficiente."; return; }
                     try {
-                        const materials = {};
-                        for (const key in colorMap) { materials[key] = new THREE.MeshStandardMaterial({ color: colorMap[key], roughness: 0.8, metalness: 0.1 }); }
-                        materials['Error'] = new THREE.MeshBasicMaterial({ color: colorMap['Error'] });
-
-                        // --- Crear Piezas (Base, Tapa, Laterales, Trasera - sin cambios) ---
-                        const baseGeo = new THREE.BoxGeometry(L, E_cm, A); const baseMesh = new THREE.Mesh(baseGeo, materials['Base']); baseMesh.position.set(0, E_cm / 2, 0); furnitureGroup.value.add(baseMesh);
-                        const tapaGeo = new THREE.BoxGeometry(L, E_cm, A); const tapaMesh = new THREE.Mesh(tapaGeo, materials['Tapa']); tapaMesh.position.set(0, H - E_cm / 2, 0); furnitureGroup.value.add(tapaMesh);
-                        const latGeo = new THREE.BoxGeometry(E_cm, H, A); const latIzqMesh = new THREE.Mesh(latGeo, materials['Lateral']); latIzqMesh.position.set(-L / 2 + E_cm / 2, H / 2, 0); furnitureGroup.value.add(latIzqMesh);
-                        const latDerMesh = new THREE.Mesh(latGeo.clone(), materials['Lateral']); latDerMesh.position.set(L / 2 - E_cm / 2, H / 2, 0); furnitureGroup.value.add(latDerMesh);
-                        const traseraW = L - 2 * E_cm; if (traseraW > 0.1) { const traseraGeo = new THREE.BoxGeometry(traseraW, H, E_cm); const traseraMesh = new THREE.Mesh(traseraGeo, materials['Trasera']); traseraMesh.position.set(0, H / 2, -A / 2 + E_cm / 2); furnitureGroup.value.add(traseraMesh); }
-
-                        // --- Crear Puertas con Pivotes ---
+                        const materials = {}; for (const key in colorMap) { materials[key] = new THREE.MeshStandardMaterial({ color: colorMap[key], roughness: 0.8, metalness: 0.1, side: THREE.DoubleSide }); } materials['Error'] = new THREE.MeshBasicMaterial({ color: colorMap['Error'] });
+                        // console.log("Creating pieces..."); // DEBUG (opcional)
+                        const addMesh = (pieceType, geometry, position) => { const material = materials[pieceType] || materials['Error']; const mesh = new THREE.Mesh(geometry, material); mesh.position.copy(position); mesh.userData.pieceType = pieceType; mesh.visible = pieceTypeVisibility.value[pieceType]; furnitureGroup.value.add(mesh); /* console.log(` Added ${pieceType}: Visible = ${mesh.visible}`);*/ return mesh; };
+                        const baseGeo = new THREE.BoxGeometry(L, E_cm, A); addMesh('Base', baseGeo, new THREE.Vector3(0, E_cm / 2, 0));
+                        const tapaGeo = new THREE.BoxGeometry(L, E_cm, A); addMesh('Tapa', tapaGeo, new THREE.Vector3(0, H - E_cm / 2, 0));
+                        const latGeo = new THREE.BoxGeometry(E_cm, H, A); addMesh('Lateral', latGeo, new THREE.Vector3(-L / 2 + E_cm / 2, H / 2, 0)); addMesh('Lateral', latGeo.clone(), new THREE.Vector3(L / 2 - E_cm / 2, H / 2, 0));
+                        const traseraW = L - 2 * E_cm; if (traseraW > 0.1) { const traseraGeo = new THREE.BoxGeometry(traseraW, H, E_cm); addMesh('Trasera', traseraGeo, new THREE.Vector3(0, H / 2, -A / 2 + E_cm / 2)); } /* else { console.log(" Skipped Trasera (width too small)"); }*/
                         const puertaGeo = new THREE.BoxGeometry(anchoPuerta, H, E_cm);
-                        const puertaMaterial = materials['Puerta'];
-
-                        // Puerta Izquierda
-                        const pivotIzq = new THREE.Group(); // Grupo pivote
-                        pivotIzq.position.set(-L / 2 + E_cm, H / 2, A / 2 - E_cm / 2); // Posición de la bisagra
-                        furnitureGroup.value.add(pivotIzq);
-                        const puertaIzqMesh = new THREE.Mesh(puertaGeo, puertaMaterial);
-                        puertaIzqMesh.position.set(anchoPuerta / 2, 0, 0); // Posición de la puerta RELATIVA al pivote
-                        pivotIzq.add(puertaIzqMesh);
-                        leftDoorPivot.value = markRaw(pivotIzq); // Guardar ref al pivote (marcado raw)
-                         // Aplicar rotación inicial inmediatamente (sin animación aquí)
-                        pivotIzq.rotation.y = leftDoorTargetRotation.value;
+                        const pivotLeft = new THREE.Group(); pivotLeft.position.set(-L / 2 + E_cm / 2, H / 2, A / 2 - E_cm / 2); const puertaIzqMesh = new THREE.Mesh(puertaGeo, materials['Puerta']); puertaIzqMesh.position.set(anchoPuerta / 2, 0, 0); pivotLeft.add(puertaIzqMesh); pivotLeft.userData.pieceType = 'Puerta'; pivotLeft.visible = pieceTypeVisibility.value['Puerta']; furnitureGroup.value.add(pivotLeft); doorLeftPivotRef.value = markRaw(pivotLeft); // console.log(` Added Pivot Left: Visible = ${pivotLeft.visible}`);
+                        const pivotRight = new THREE.Group(); pivotRight.position.set(L / 2 - E_cm / 2, H / 2, A / 2 - E_cm / 2); const puertaDerMesh = new THREE.Mesh(puertaGeo.clone(), materials['Puerta']); puertaDerMesh.position.set(-anchoPuerta / 2, 0, 0); pivotRight.add(puertaDerMesh); pivotRight.userData.pieceType = 'Puerta'; pivotRight.visible = pieceTypeVisibility.value['Puerta']; furnitureGroup.value.add(pivotRight); doorRightPivotRef.value = markRaw(pivotRight); // console.log(` Added Pivot Right: Visible = ${pivotRight.visible}`);
+                        if (pivotLeft.visible) { pivotLeft.rotation.y = isDoorLeftOpen.value ? -doorOpenAngle : 0; } else { pivotLeft.rotation.y = 0; } if (pivotRight.visible) { pivotRight.rotation.y = isDoorRightOpen.value ? doorOpenAngle : 0; } else { pivotRight.rotation.y = 0; } // console.log("Applying door rotations");
+                        fitCameraToObject(camera.value, furnitureGroup.value, controls.value); // console.log("Called fitCameraToObject");
+                    } catch(error) { console.error("ERROR inside updateFurnitureModel try block:", error); renderError.value = "Error al generar piezas 3D."; while (furnitureGroup.value.children.length > 0) { furnitureGroup.value.remove(furnitureGroup.value.children[0]); } doorLeftPivotRef.value = null; doorRightPivotRef.value = null;
+                    } finally { /* console.log("--- updateFurnitureModel END ---"); */ } // DEBUG (opcional)
+                 }
 
 
-                        // Puerta Derecha
-                        const pivotDer = new THREE.Group(); // Grupo pivote
-                        pivotDer.position.set(L / 2 - E_cm, H / 2, A / 2 - E_cm / 2); // Posición de la bisagra
-                        furnitureGroup.value.add(pivotDer);
-                        const puertaDerMesh = new THREE.Mesh(puertaGeo.clone(), puertaMaterial); // Clonar geometría
-                        puertaDerMesh.position.set(-anchoPuerta / 2, 0, 0); // Posición de la puerta RELATIVA al pivote
-                        pivotDer.add(puertaDerMesh);
-                        rightDoorPivot.value = markRaw(pivotDer); // Guardar ref al pivote (marcado raw)
-                        // Aplicar rotación inicial inmediatamente
-                        pivotDer.rotation.y = rightDoorTargetRotation.value;
+                 // --- Hooks Ciclo de Vida (SIN CAMBIOS) ---
+                 onMounted(() => { nextTick(() => { initThreeJS(); if(isRendererReady.value) { updateFurnitureModel(); } }); });
+                 onBeforeUnmount(() => { cancelAnimationFrame(animationFrameId); window.removeEventListener('resize', onWindowResize); if (renderer.value) { if (scene.value) { scene.value.traverse(object => { if (object.geometry) object.geometry.dispose(); if (object.material) { if (Array.isArray(object.material)) { object.material.forEach(material => material.dispose()); } else { object.material.dispose(); } } }); } renderer.value.dispose(); if(rendererContainer.value && renderer.value.domElement) { rendererContainer.value.removeChild(renderer.value.domElement); } } if (controls.value) { controls.value.dispose(); } isRendererReady.value = false; doorLeftPivotRef.value = null; doorRightPivotRef.value = null; });
 
+                 // --- Watchers ---
 
-                        fitCameraToObject(camera.value, furnitureGroup.value, controls.value);
-
-                     } catch(error) {
-                         console.error("Error creando geometría 3D:", error);
-                         renderError.value = "Error al generar piezas 3D.";
-                          while (furnitureGroup.value.children.length > 0) { furnitureGroup.value.remove(furnitureGroup.value.children[0]); }
-                     }
-                }
-
-                 function fitCameraToObject( camera, object, controls, offset = 1.5 ) { /* ... código sin cambios ... */ const boundingBox = new THREE.Box3(); boundingBox.setFromObject( object ); const center = new THREE.Vector3(); boundingBox.getCenter( center ); const size = new THREE.Vector3(); boundingBox.getSize( size ); const maxDim = Math.max( size.x, size.y, size.z ); const fov = camera.fov * ( Math.PI / 180 ); let cameraZ = Math.abs( maxDim / 2 / Math.tan( fov / 2 ) ); cameraZ *= offset; camera.position.x = center.x + cameraZ / 1.5; camera.position.y = center.y + cameraZ / 2; camera.position.z = center.z + cameraZ; const minZ = boundingBox.min.z; const cameraToFarEdge = ( minZ < 0 ) ? -minZ + cameraZ : cameraZ - minZ; camera.far = cameraToFarEdge * 3; camera.updateProjectionMatrix(); if ( controls ) { controls.target.copy( center ); controls.saveState(); controls.update(); } }
-
-                // --- Hooks Ciclo de Vida (sin cambios) ---
-                onMounted(() => { nextTick(() => { initThreeJS(); if(isRendererReady.value) { updateFurnitureModel(); } }); });
-                onBeforeUnmount(() => { /* ... código limpieza sin cambios ... */ cancelAnimationFrame(animationFrameId); window.removeEventListener('resize', onWindowResize); if (renderer.value) { if(furnitureGroup.value) { furnitureGroup.value.traverse(child => { if (child.geometry) child.geometry.dispose(); }); } renderer.value.dispose(); if(rendererContainer.value && renderer.value.domElement) { rendererContainer.value.removeChild(renderer.value.domElement); } } if (controls.value) { controls.value.dispose(); } isRendererReady.value = false; });
-
-                // --- NUEVO: Watchers para estado de puertas ---
-                watch(isLeftDoorOpen, (isOpen) => {
-                    leftDoorTargetRotation.value = isOpen ? DOOR_OPEN_ANGLE : 0;
-                });
-                watch(isRightDoorOpen, (isOpen) => {
-                    rightDoorTargetRotation.value = isOpen ? -DOOR_OPEN_ANGLE : 0; // Rotación negativa para la derecha
-                });
-
-                // Watcher para dimensiones (existente)
-                watch([largo, ancho, alto, espesor, LUZ_ENTRE_PUERTAS_CM], () => {
+                 // Observar dimensiones para RECONSTRUIR el modelo 3D completo
+                 watch([largo, ancho, alto, espesor, LUZ_ENTRE_PUERTAS_CM], () => {
+                    // console.log("Dimensions watcher triggered"); // DEBUG (opcional)
                      if(isRendererReady.value){
-                         updateFurnitureModel();
+                         updateFurnitureModel(); // Reconstruir todo el modelo
                      }
-                }, { immediate: false });
+                 }, { immediate: false });
 
-                // --- Exponer al Template ---
-                return {
-                    largo, ancho, alto, espesor, sheetHeight, sheetWidth, boardPrice,
-                    currentDateTime, piezasCalculadas, resultadoCorte,
-                    formatDecimal, formatCurrency, getPieceStyle, getPieceTooltip,
-                    currentSheetWidth: sheetWidth, currentSheetHeight: sheetHeight,
-                    LUZ_ENTRE_PUERTAS_CM,
-                    // 3D y Puertas
-                    rendererContainer, isRendererReady, renderError,
-                    isLeftDoorOpen, isRightDoorOpen // Exponer estado de puertas
-                };
+                 // *** WATCHER CORREGIDO (v1.9) *** Observar CAMBIOS y aplicar estado actual directamente
+                 watch(pieceTypeVisibility, (newVisibility) => { // No necesitamos oldVisibility aquí
+                    // console.log("Visibility watcher triggered (Simpler Apply Method)"); // DEBUG (opcional)
+
+                    // Solo actuar si el renderer y el grupo están listos
+                    if (!isRendererReady.value || !furnitureGroup.value) {
+                        // console.log("Visibility watcher: Aborted (not ready or no group)"); // DEBUG (opcional)
+                        return;
+                    }
+
+                    // console.log("Applying current visibility state:", JSON.parse(JSON.stringify(newVisibility))); // DEBUG (opcional)
+
+                    let changesApplied = false; // Para saber si hicimos algo
+
+                    furnitureGroup.value.children.forEach(child => {
+                        const pieceType = child.userData.pieceType;
+                        // Verificar si este hijo es de un tipo que manejamos en pieceTypeVisibility
+                        if (pieceType && newVisibility.hasOwnProperty(pieceType)) {
+                            const shouldBeVisible = newVisibility[pieceType]; // El estado que DEBERÍA tener
+
+                            // Aplicar el estado SOLO si es diferente al actual, para optimizar un poco
+                            if (child.visible !== shouldBeVisible) {
+                                child.visible = shouldBeVisible;
+                                // console.log(` Updated visibility for ${pieceType} (obj ID ${child.id}): ${shouldBeVisible}`); // DEBUG (opcional)
+                                changesApplied = true;
+
+                                // Resetear rotación si se OCULTA un pivote de puerta
+                                if (pieceType === 'Puerta' && !shouldBeVisible) {
+                                    if (child === doorLeftPivotRef.value || child === doorRightPivotRef.value) {
+                                         child.rotation.y = 0;
+                                         // console.log(`   Reset rotation for hidden door pivot ${child === doorLeftPivotRef.value ? 'Left' : 'Right'}`); //DEBUG (opcional)
+                                    }
+                                }
+                            }
+                        }
+                    });
+
+                    // if (changesApplied) { // DEBUG (opcional)
+                    //     console.log("Visibility changes applied.");
+                    // } else {
+                    //     console.log("Visibility watcher: No visual changes needed for current state.");
+                    // }
+
+                 }, { deep: true, flush: 'post' }); // flush: 'post' puede ayudar
+
+
+                 // --- Exponer al Template (SIN CAMBIOS) ---
+                 return {
+                     largo, ancho, alto, espesor, sheetHeight, sheetWidth, boardPrice,
+                     piezasCalculadas, resultadoCorte, formatDecimal, formatCurrency,
+                     getPieceStyle, getPieceTooltip, currentSheetWidth: sheetWidth,
+                     currentSheetHeight: sheetHeight, LUZ_ENTRE_PUERTAS_CM,
+                     rendererContainer, isRendererReady, renderError,
+                     pieceTypeVisibility, isDoorLeftOpen, isDoorRightOpen,
+                     toggleDoorLeft, toggleDoorRight
+                 };
             }
         }).mount('#app');
     </script>
