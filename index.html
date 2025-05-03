@@ -31,7 +31,7 @@
 </head>
 <body>
     <div id="app" class="container mt-4 mb-5">
-        <h1 class="mb-4 text-center">Calculadora de Mueble - Plano de Corte Estimado v0.1 (Visibilidad Directa OK)</h1>
+        <h1 class="mb-4 text-center">Calculadora de piezas para mueble - Plano de Corte Estimado v0.1</h1>
 
         <div class="row">
              <div class="col-lg-6">
@@ -47,11 +47,11 @@
              </div>
              <div class="col-lg-6">
                  <div class="card shadow-sm h-100">
-                     <div class="card-header">2. Datos de la Tabla de MDF</div>
+                     <div class="card-header">2. Datos de la Placa de MDF</div>
                      <div class="card-body"><div class="row g-3">
-                         <div class="col-md-6"><label for="sheetHeight" class="form-label">Alto Tabla (cm):</label><input type="number" id="sheetHeight" class="form-control" v-model.number="sheetHeight" min="1"></div>
-                         <div class="col-md-6"><label for="sheetWidth" class="form-label">Ancho Tabla (cm):</label><input type="number" id="sheetWidth" class="form-control" v-model.number="sheetWidth" min="1"></div>
-                         <div class="col-12"><label for="boardPrice" class="form-label">Precio por Tabla ($):</label><input type="number" id="boardPrice" class="form-control" v-model.number="boardPrice" min="0" step="any"></div>
+                         <div class="col-md-6"><label for="sheetHeight" class="form-label">Alto Placa (cm):</label><input type="number" id="sheetHeight" class="form-control" v-model.number="sheetHeight" min="1"></div>
+                         <div class="col-md-6"><label for="sheetWidth" class="form-label">Ancho Placa (cm):</label><input type="number" id="sheetWidth" class="form-control" v-model.number="sheetWidth" min="1"></div>
+                         <div class="col-12"><label for="boardPrice" class="form-label">Precio por Placa ($):</label><input type="number" id="boardPrice" class="form-control" v-model.number="boardPrice" min="0" step="any"></div>
                      </div></div>
                  </div>
              </div>
@@ -61,7 +61,7 @@
             <div class="card-header">3. Resultados del Cálculo y Visualización</div>
             <div class="card-body">
                 <div class="text-center mb-4 p-3 bg-light rounded border">
-                    <span class="resultado-tablas">Tablas MDF: {{ resultadoCorte.count >= 0 ? resultadoCorte.count : 'N/A' }}</span>
+                    <span class="resultado-tablas">Placas MDF: {{ resultadoCorte.count >= 0 ? resultadoCorte.count : 'N/A' }}</span>
                     <span class="resultado-precio">Costo Total: {{ formatCurrency(resultadoCorte.totalPrice) }}</span>
                     <p v-if="resultadoCorte.count > 0 && !resultadoCorte.error" class="text-muted small mt-2 mb-0">Estimación con packer simplificado. El layout real y costo pueden variar.</p>
                     <p v-if="resultadoCorte.error" class="text-danger small mt-2 mb-0"><strong>Error:</strong> {{ resultadoCorte.error }}</p>
@@ -130,7 +130,7 @@
                  <p v-if="resultadoCorte.count > 0 && !resultadoCorte.error" class="text-center text-muted small mb-4">Representación visual basada en el packer simplificado. NO considera ancho de corte (kerf).</p>
                  <div v-if="resultadoCorte.boardData && resultadoCorte.boardData.length > 0 && !resultadoCorte.error" class="row">
                      <div v-for="board in resultadoCorte.boardData" :key="board.id" class="col-lg-6 mb-4">
-                         <div class="board-header">Tabla #{{ board.id }}</div>
+                         <div class="board-header">Placa #{{ board.id }}</div>
                          <div class="sheet-layout-container" :style="{ aspectRatio: (currentSheetWidth > 0 ? currentSheetWidth : 1) / (currentSheetHeight > 0 ? currentSheetHeight : 1) }">
                              <div v-for="piece in board.pieces" :key="piece.id" class="placed-piece" :style="getPieceStyle(piece, currentSheetWidth, currentSheetHeight)" :title="getPieceTooltip(piece)">{{ piece.shortCode }}</div>
                          </div>
