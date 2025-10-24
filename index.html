@@ -407,12 +407,12 @@
     <div id="app" class="container">
         <div class="main-card">
             <div class="header-section">
-                <h1>🪚 Calculadora Optimizada de Corte MDF</h1>
+                <h1> Calculadora Optimizada de Corte MDF</h1>
                 <div class="version">Versión 2.0 - Mejorada y Optimizada</div>
             </div>
             
-            <div class="p-4">
-                <!-- Presets Rápidos -->
+            <!--Presets Rápidos -->
+            <!--<div class="p-4">
                 <div class="info-note mb-4">
                     <h5 class="fw-bold mb-2">⚡ Presets Rápidos</h5>
                     <p class="mb-2 small">Carga configuraciones predefinidas para comenzar rápidamente:</p>
@@ -422,14 +422,14 @@
                         <button @click="loadPreset('mesita')" class="preset-btn">Mesita de Luz</button>
                         <button @click="loadPreset('placard')" class="preset-btn">Placard Simple</button>
                     </div>
-                </div>
+                </div>-->
 
                 <!-- Inputs -->
                 <div class="row g-4 mb-4">
                     <div class="col-lg-6">
                         <div class="input-card card">
                             <div class="card-header">
-                                📐 Dimensiones del Mueble
+                                Dimensiones del Mueble
                             </div>
                             <div class="card-body">
                                 <div class="row g-3">
@@ -468,7 +468,7 @@
                     <div class="col-lg-6">
                         <div class="input-card card">
                             <div class="card-header">
-                                📋 Datos de la Placa MDF
+                                Datos de la Placa MDF
                             </div>
                             <div class="card-body">
                                 <div class="row g-3">
@@ -500,27 +500,27 @@
                     <div class="text-center">
                         <div v-if="!resultadoCorte.error">
                             <div class="stat-box">
-                                <span class="stat-label">📦 Placas:</span>
+                                <span class="stat-label"> Placas:</span>
                                 <span class="stat-value">{{ resultadoCorte.count }}</span>
                             </div>
                             <div class="stat-box">
-                                <span class="stat-label">💰 Costo:</span>
+                                <span class="stat-label"> Costo:</span>
                                 <span class="stat-value">{{ formatCurrency(resultadoCorte.totalPrice) }}</span>
                             </div>
                             <div class="stat-box">
-                                <span class="stat-label">📊 Eficiencia:</span>
+                                <span class="stat-label"> Eficiencia:</span>
                                 <span class="stat-value">{{ efficiency }}%</span>
                             </div>
                         </div>
                         <div v-else class="text-white">
-                            <strong>⚠️ Error:</strong> {{ resultadoCorte.error }}
+                            <strong> Error:</strong> {{ resultadoCorte.error }}
                         </div>
                     </div>
                 </div>
 
                 <!-- Información de Eficiencia -->
                 <div v-if="!resultadoCorte.error && resultadoCorte.count > 0" class="optimization-info">
-                    <h5 class="fw-bold mb-2">📈 Análisis de Aprovechamiento</h5>
+                    <h5 class="fw-bold mb-2"> Análisis de Aprovechamiento</h5>
                     <p class="mb-2">Material utilizado vs. disponible en las placas</p>
                     <div class="efficiency-bar">
                         <div class="efficiency-fill" :style="{width: efficiency + '%'}">
@@ -538,14 +538,14 @@
 
                 <!-- Vista 3D -->
                 <div class="mb-4">
-                    <h3 class="text-center mb-3 fw-bold">🎨 Visualización 3D Interactiva</h3>
+                    <h3 class="text-center mb-3 fw-bold"> Visualización 3D Interactiva</h3>
                     <div id="renderer-container" ref="rendererContainer">
                         <div v-if="!isRendererReady" class="renderer-placeholder">
                             <div class="loading-spinner mb-2"></div>
                             <div>Cargando visor 3D...</div>
                         </div>
                         <div v-if="isRendererReady && renderError" class="renderer-placeholder text-danger">
-                            ❌ Error: {{ renderError }}
+                             Error: {{ renderError }}
                         </div>
                     </div>
                     
@@ -554,7 +554,7 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="control-section">
-                                    <h4>👁️ Visibilidad de Piezas</h4>
+                                    <h4> Visibilidad de Piezas</h4>
                                     <div v-if="!isRendererReady" class="text-center text-muted">
                                         Generando controles...
                                     </div>
@@ -570,19 +570,19 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="control-section">
-                                    <h4>🚪 Control de Puertas</h4>
+                                    <h4> Control de Puertas</h4>
                                     <div v-if="!isRendererReady" class="text-center text-muted">
                                         Esperando modelo 3D...
                                     </div>
                                     <div v-else class="door-controls">
                                         <button @click="toggleDoorLeft" class="btn btn-modern btn-primary-modern" :disabled="!pieceTypeVisibility['Puerta']">
-                                            {{ isDoorLeftOpen ? '🔓 Cerrar' : '🔒 Abrir' }} Puerta Izq.
+                                            {{ isDoorLeftOpen ? ' Cerrar' : ' Abrir' }} Puerta Izq.
                                         </button>
                                         <button @click="toggleDoorRight" class="btn btn-modern btn-primary-modern" :disabled="!pieceTypeVisibility['Puerta']">
-                                            {{ isDoorRightOpen ? '🔓 Cerrar' : '🔒 Abrir' }} Puerta Der.
+                                            {{ isDoorRightOpen ? ' Cerrar' : ' Abrir' }} Puerta Der.
                                         </button>
                                         <button @click="resetCamera" class="btn btn-modern btn-success-modern">
-                                            🎯 Resetear Vista
+                                             Resetear Vista
                                         </button>
                                     </div>
                                 </div>
@@ -595,7 +595,7 @@
 
                 <!-- Tabla de Despiece -->
                 <div class="mb-4">
-                    <h3 class="text-center mb-3 fw-bold">📋 Despiece Detallado</h3>
+                    <h3 class="text-center mb-3 fw-bold"> Despiece Detallado</h3>
                     <div class="table-responsive">
                         <table class="table table-modern table-striped table-hover">
                             <thead class="text-white">
@@ -635,14 +635,14 @@
 
                 <!-- Planos de Corte -->
                 <div class="mb-4">
-                    <h3 class="text-center mb-3 fw-bold">✂️ Planos de Corte Optimizados</h3>
+                    <h3 class="text-center mb-3 fw-bold"> Planos de Corte Optimizados</h3>
                     <p v-if="resultadoCorte.count > 0 && !resultadoCorte.error" class="text-center text-muted mb-4">
                         Distribución optimizada de piezas en las placas MDF
                     </p>
                     <div v-if="resultadoCorte.boardData && resultadoCorte.boardData.length > 0 && !resultadoCorte.error" class="row">
                         <div v-for="board in resultadoCorte.boardData" :key="board.id" class="col-lg-6 mb-4">
                             <div class="board-header">
-                                📦 Placa #{{ board.id }} 
+                                 Placa #{{ board.id }} 
                                 <small class="text-muted">({{ board.pieces.length }} piezas)</small>
                             </div>
                             <div class="sheet-layout-container" :style="{ aspectRatio: sheetWidth / sheetHeight, maxWidth: '600px' }">
@@ -663,7 +663,7 @@
 
                 <!-- Notas e Información -->
                 <div class="info-note">
-                    <h5 class="fw-bold mb-3">📝 Notas Importantes y Recomendaciones</h5>
+                    <h5 class="fw-bold mb-3"> Notas Importantes y Recomendaciones</h5>
                     <ul class="mb-0">
                         <li class="mb-2">
                             <strong>Método de Construcción:</strong> Este mueble sigue el diseño estándar donde los laterales tienen la altura total, la base y tapa van entre laterales, y las puertas se montan al frente.
@@ -688,7 +688,7 @@
 
                 <div class="info-note info-note-warning mt-3">
                     <p class="mb-0">
-                        <strong>⚠️ Descargo de Responsabilidad:</strong> Esta calculadora fue desarrollada como herramienta educativa y de estimación. Los cálculos son aproximaciones y pueden contener errores. 
+                        <strong> Descargo de Responsabilidad:</strong> Esta calculadora fue desarrollada como herramienta educativa y de estimación. Los cálculos son aproximaciones y pueden contener errores. 
                         <strong class="text-danger">NO debe usarse como plano profesional sin validación exhaustiva.</strong> El uso es bajo su exclusiva responsabilidad.
                     </p>
                 </div>
