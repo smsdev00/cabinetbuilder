@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora de Corte MDF v2.0</title>
+    <title>Calculadora de Corte MDF v2.1</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <style>
         :root {
@@ -23,7 +23,6 @@
         }
         
         #app { 
-            /* max-width: 1400px; */
             animation: fadeIn 0.5s ease-in;
         }
         
@@ -315,29 +314,6 @@
             margin: 0.25rem;
         }
         
-        .preset-buttons {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-            margin-top: 1rem;
-        }
-        
-        .preset-btn {
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-            border: 2px solid var(--primary-color);
-            background: white;
-            color: var(--primary-color);
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        
-        .preset-btn:hover {
-            background: var(--primary-color);
-            color: white;
-        }
-        
         .optimization-info {
             background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
             border: 2px solid var(--success-color);
@@ -407,26 +383,13 @@
     <div id="app" class="container-fluid">
         <div class="main-card">
             <div class="header-section">
-                <h1> Calculadora Optimizada de Corte MDF</h1>
-                <div class="version">Versión 2.0 - Mejorada y Optimizada</div>
+                <h1>Calculadora Optimizada de Corte MDF</h1>
+                <div class="version">Versión 2.1 - Con Marco Interno Opcional</div>
             </div>
             
-            <!--Presets Rápidos -->
-            <!--<div class="p-4">
-                <div class="info-note mb-4">
-                    <h5 class="fw-bold mb-2">⚡ Presets Rápidos</h5>
-                    <p class="mb-2 small">Carga configuraciones predefinidas para comenzar rápidamente:</p>
-                    <div class="preset-buttons">
-                        <button @click="loadPreset('alacena')" class="preset-btn">Alacena Cocina</button>
-                        <button @click="loadPreset('biblioteca')" class="preset-btn">Biblioteca</button>
-                        <button @click="loadPreset('mesita')" class="preset-btn">Mesita de Luz</button>
-                        <button @click="loadPreset('placard')" class="preset-btn">Placard Simple</button>
-                    </div>
-                </div>-->
-
-                <!-- Inputs -->
+            <div class="p-4">
                 <div class="row g-4 mb-4">
-                    <div class="col-lg-6">
+                    <div class="col-lg-4">
                         <div class="input-card card">
                             <div class="card-header">
                                 Dimensiones del Mueble
@@ -465,7 +428,46 @@
                         </div>
                     </div>
                     
-                    <div class="col-lg-6">
+                    <div class="col-lg-4">
+                        <div class="input-card card">
+                            <div class="card-header">
+                                Marco Interno (Opcional)
+                            </div>
+                            <div class="card-body">
+                                <div class="form-check-modern form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox" id="incluirMarco" v-model="incluirMarco">
+                                    <label class="form-check-label" for="incluirMarco">
+                                        Incluir Marco Interno
+                                    </label>
+                                </div>
+                                
+                                <div v-if="incluirMarco" class="row g-3">
+                                    <div class="col-12">
+                                        <label for="anchoMarco" class="form-label">Ancho del Marco (cm)</label>
+                                        <input type="number" id="anchoMarco" class="form-control" v-model.number="anchoMarco" min="1" max="10" step="0.1">
+                                        <small class="text-muted">Ancho de las tiras del marco perimetral</small>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="alert alert-info mb-0">
+                                            <strong>Nota:</strong> El marco incluye:
+                                            <ul class="mb-0 mt-2 small">
+                                                <li>Tiras laterales (2)</li>
+                                                <li>Tira superior (1)</li>
+                                                <li>Tira inferior (1)</li>
+                                                <li>Barra divisoria central (1)</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div v-else class="text-center text-muted py-4">
+                                    <p>Active esta opción para agregar un marco donde apoyarán las puertas</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-4">
                         <div class="input-card card">
                             <div class="card-header">
                                 Datos de la Placa MDF
@@ -495,32 +497,30 @@
                     </div>
                 </div>
 
-                <!-- Resultados -->
                 <div :class="['results-banner', resultadoCorte.error ? 'error' : '']">
                     <div class="text-center">
                         <div v-if="!resultadoCorte.error">
                             <div class="stat-box">
-                                <span class="stat-label"> Placas:</span>
+                                <span class="stat-label">Placas:</span>
                                 <span class="stat-value">{{ resultadoCorte.count }}</span>
                             </div>
                             <div class="stat-box">
-                                <span class="stat-label"> Costo:</span>
+                                <span class="stat-label">Costo:</span>
                                 <span class="stat-value">{{ formatCurrency(resultadoCorte.totalPrice) }}</span>
                             </div>
                             <div class="stat-box">
-                                <span class="stat-label"> Eficiencia:</span>
+                                <span class="stat-label">Eficiencia:</span>
                                 <span class="stat-value">{{ efficiency }}%</span>
                             </div>
                         </div>
                         <div v-else class="text-white">
-                            <strong> Error:</strong> {{ resultadoCorte.error }}
+                            <strong>Error:</strong> {{ resultadoCorte.error }}
                         </div>
                     </div>
                 </div>
 
-                <!-- Información de Eficiencia -->
                 <div v-if="!resultadoCorte.error && resultadoCorte.count > 0" class="optimization-info">
-                    <h5 class="fw-bold mb-2"> Análisis de Aprovechamiento</h5>
+                    <h5 class="fw-bold mb-2">Análisis de Aprovechamiento</h5>
                     <p class="mb-2">Material utilizado vs. disponible en las placas</p>
                     <div class="efficiency-bar">
                         <div class="efficiency-fill" :style="{width: efficiency + '%'}">
@@ -536,25 +536,23 @@
 
                 <div class="section-divider"></div>
 
-                <!-- Vista 3D -->
                 <div class="mb-4">
-                    <h3 class="text-center mb-3 fw-bold"> Visualización 3D Interactiva</h3>
+                    <h3 class="text-center mb-3 fw-bold">Visualización 3D Interactiva</h3>
                     <div id="renderer-container" ref="rendererContainer">
                         <div v-if="!isRendererReady" class="renderer-placeholder">
                             <div class="loading-spinner mb-2"></div>
                             <div>Cargando visor 3D...</div>
                         </div>
                         <div v-if="isRendererReady && renderError" class="renderer-placeholder text-danger">
-                             Error: {{ renderError }}
+                            Error: {{ renderError }}
                         </div>
                     </div>
                     
-                    <!-- Controles 3D -->
                     <div class="controls-panel">
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="control-section">
-                                    <h4> Visibilidad de Piezas</h4>
+                                    <h4>Visibilidad de Piezas</h4>
                                     <div v-if="!isRendererReady" class="text-center text-muted">
                                         Generando controles...
                                     </div>
@@ -570,19 +568,19 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="control-section">
-                                    <h4> Control de Puertas</h4>
+                                    <h4>Control de Puertas</h4>
                                     <div v-if="!isRendererReady" class="text-center text-muted">
                                         Esperando modelo 3D...
                                     </div>
                                     <div v-else class="door-controls">
                                         <button @click="toggleDoorLeft" class="btn btn-modern btn-primary-modern" :disabled="!pieceTypeVisibility['Puerta']">
-                                            {{ isDoorLeftOpen ? ' Cerrar' : ' Abrir' }} Puerta Izq.
+                                            {{ isDoorLeftOpen ? 'Cerrar' : 'Abrir' }} Puerta Izq.
                                         </button>
                                         <button @click="toggleDoorRight" class="btn btn-modern btn-primary-modern" :disabled="!pieceTypeVisibility['Puerta']">
-                                            {{ isDoorRightOpen ? ' Cerrar' : ' Abrir' }} Puerta Der.
+                                            {{ isDoorRightOpen ? 'Cerrar' : 'Abrir' }} Puerta Der.
                                         </button>
                                         <button @click="resetCamera" class="btn btn-modern btn-success-modern">
-                                             Resetear Vista
+                                            Resetear Vista
                                         </button>
                                     </div>
                                 </div>
@@ -593,9 +591,8 @@
 
                 <div class="section-divider"></div>
 
-                <!-- Tabla de Despiece -->
                 <div class="mb-4">
-                    <h3 class="text-center mb-3 fw-bold"> Despiece Detallado</h3>
+                    <h3 class="text-center mb-3 fw-bold">Despiece Detallado</h3>
                     <div class="table-responsive">
                         <table class="table table-modern table-striped table-hover">
                             <thead class="text-white">
@@ -633,16 +630,15 @@
 
                 <div class="section-divider"></div>
 
-                <!-- Planos de Corte -->
                 <div class="mb-4">
-                    <h3 class="text-center mb-3 fw-bold"> Planos de Corte Optimizados</h3>
+                    <h3 class="text-center mb-3 fw-bold">Planos de Corte Optimizados</h3>
                     <p v-if="resultadoCorte.count > 0 && !resultadoCorte.error" class="text-center text-muted mb-4">
                         Distribución optimizada de piezas en las placas MDF
                     </p>
                     <div v-if="resultadoCorte.boardData && resultadoCorte.boardData.length > 0 && !resultadoCorte.error" class="row">
                         <div v-for="board in resultadoCorte.boardData" :key="board.id" class="col-lg-6 mb-4">
                             <div class="board-header">
-                                 Placa #{{ board.id }} 
+                                Placa #{{ board.id }} 
                                 <small class="text-muted">({{ board.pieces.length }} piezas)</small>
                             </div>
                             <div class="sheet-layout-container" :style="{ aspectRatio: sheetWidth / sheetHeight, maxWidth: '600px' }">
@@ -661,12 +657,14 @@
                     </div>
                 </div>
 
-                <!-- Notas e Información -->
                 <div class="info-note">
-                    <h5 class="fw-bold mb-3"> Notas Importantes y Recomendaciones</h5>
+                    <h5 class="fw-bold mb-3">Notas Importantes y Recomendaciones</h5>
                     <ul class="mb-0">
                         <li class="mb-2">
                             <strong>Método de Construcción:</strong> Este mueble sigue el diseño estándar donde los laterales tienen la altura total, la base y tapa van entre laterales, y las puertas se montan al frente.
+                        </li>
+                        <li class="mb-2" v-if="incluirMarco">
+                            <strong>Marco Interno:</strong> El marco perimetral se monta en el frente del mueble para dar soporte a las puertas. La barra divisoria central se coloca verticalmente tapando el espacio entre puertas.
                         </li>
                         <li class="mb-2">
                             <strong>Antes de Cortar:</strong> Siempre verifique las medidas calculadas. Esta es una herramienta de estimación y debe validarse manualmente antes de realizar los cortes.
@@ -688,7 +686,7 @@
 
                 <div class="info-note info-note-warning mt-3">
                     <p class="mb-0">
-                        <strong> Descargo de Responsabilidad:</strong> Esta calculadora fue desarrollada como herramienta educativa y de estimación. Los cálculos son aproximaciones y pueden contener errores. 
+                        <strong>Descargo de Responsabilidad:</strong> Esta calculadora fue desarrollada como herramienta educativa y de estimación. Los cálculos son aproximaciones y pueden contener errores. 
                         <strong class="text-danger">NO debe usarse como plano profesional sin validación exhaustiva.</strong> El uso es bajo su exclusiva responsabilidad.
                     </p>
                 </div>
@@ -696,7 +694,7 @@
         </div>
 
         <p class="text-center text-white mt-4 small">
-            💻 Desarrollado por smsdev00 | v2.0 Mejorada con IA | Licencia MIT
+            Desarrollado por smsdev00 | v2.1 Mejorada con IA | Licencia MIT
         </p>
     </div>
 
@@ -715,7 +713,6 @@
 
         createApp({
             setup() {
-                // Estados reactivos
                 const largo = ref(90);
                 const ancho = ref(90);
                 const alto = ref(180);
@@ -725,8 +722,9 @@
                 const boardPrice = ref(35000);
                 const luzPuertas = ref(0.2);
                 const kerfWidth = ref(3);
+                const incluirMarco = ref(false);
+                const anchoMarco = ref(3);
                 
-                // Estados 3D
                 const rendererContainer = ref(null);
                 const scene = ref(null);
                 const camera = ref(null);
@@ -742,7 +740,8 @@
                     Tapa: true,
                     Lateral: true,
                     Puerta: true,
-                    Trasera: true
+                    Trasera: true,
+                    Marco: true
                 });
                 const isDoorLeftOpen = ref(false);
                 const isDoorRightOpen = ref(false);
@@ -750,13 +749,13 @@
                 let animationFrameId = null;
                 const doorOpenAngle = Math.PI / 1.8;
                 
-                // Mapas de colores y códigos mejorados
                 const colorMap = {
                     'Base': '#dc3545',
                     'Tapa': '#fd7e14',
                     'Lateral': '#ffc107',
                     'Puerta': '#6f42c1',
                     'Trasera': '#0d6efd',
+                    'Marco': '#20c997',
                     'Error': '#6c757d'
                 };
                 
@@ -766,10 +765,13 @@
                     'Lateral': 'L',
                     'Puerta': 'P',
                     'Trasera': 'R',
+                    'Marco Lateral': 'ML',
+                    'Marco Superior': 'MS',
+                    'Marco Inferior': 'MI',
+                    'Barra Divisoria': 'BD',
                     'Error': 'ERR'
                 };
                 
-                // Funciones auxiliares
                 const formatDecimal = (value) => typeof value === 'number' ? value.toFixed(1) : value;
                 
                 const formatCurrency = (value) => {
@@ -779,33 +781,16 @@
                 
                 const getPieceLabel = (type) => {
                     const labels = {
-                        'Base': '🟥 Base',
-                        'Tapa': '🟧 Tapa',
-                        'Lateral': '🟨 Laterales',
-                        'Puerta': '🟪 Puertas',
-                        'Trasera': '🟦 Trasera'
+                        'Base': 'Base',
+                        'Tapa': 'Tapa',
+                        'Lateral': 'Laterales',
+                        'Puerta': 'Puertas',
+                        'Trasera': 'Trasera',
+                        'Marco': 'Marco Interno'
                     };
                     return labels[type] || type;
                 };
                 
-                // Presets predefinidos
-                const loadPreset = (type) => {
-                    const presets = {
-                        alacena: { largo: 80, ancho: 40, alto: 140, espesor: 15 },
-                        biblioteca: { largo: 120, ancho: 30, alto: 180, espesor: 18 },
-                        mesita: { largo: 50, ancho: 40, alto: 60, espesor: 15 },
-                        placard: { largo: 200, ancho: 60, alto: 240, espesor: 18 }
-                    };
-                    
-                    if (presets[type]) {
-                        largo.value = presets[type].largo;
-                        ancho.value = presets[type].ancho;
-                        alto.value = presets[type].alto;
-                        espesor.value = presets[type].espesor;
-                    }
-                };
-                
-                // Algoritmo de packing mejorado
                 function fitPiezasEnTablas(piezasInput, sheetW, sheetH, kerf) {
                     const hojas = [];
                     let globalPieceIdCounter = 1;
@@ -828,7 +813,6 @@
                     }
                     
                     function colocarPiezaEnHoja(hoja, pOrig) {
-                        // Ordenar espacios por mejor aprovechamiento
                         hoja.espacios.sort((a, b) => {
                             const areaA = a.w * a.h;
                             const areaB = b.w * b.h;
@@ -914,7 +898,6 @@
                         }
                     }
                     
-                    // Ordenar por área descendente (piezas más grandes primero)
                     todas.sort((a, b) => b.area - a.area);
                     
                     for (const p of todas) {
@@ -940,13 +923,14 @@
                     return hojas;
                 }
                 
-                // Cálculo de piezas
                 const piezasCalculadas = computed(() => {
                     const L = parseFloat(largo.value);
                     const A = parseFloat(ancho.value);
                     const H = parseFloat(alto.value);
                     const E_mm = parseFloat(espesor.value);
                     const luz = parseFloat(luzPuertas.value);
+                    const marco = incluirMarco.value;
+                    const anchoM = parseFloat(anchoMarco.value);
                     
                     if (isNaN(L) || isNaN(A) || isNaN(H) || isNaN(E_mm) || 
                         L <= 0 || A <= 0 || H <= 0 || E_mm <= 0 || isNaN(luz) || luz < 0) {
@@ -1003,16 +987,27 @@
                         { etiqueta: 'Trasera', cantidad: 1, dim1: H, dim2: L - (2 * E_cm), nota: 'Posterior (entre laterales)' }
                     ];
                     
+                    if (marco && anchoM > 0 && !isNaN(anchoM)) {
+                        const anchoInternoFrente = L - (2 * E_cm);
+                        const altoMarco = H - (2 * E_cm);
+                        
+                        piezasBase.push(
+                            { etiqueta: 'Marco Lateral', cantidad: 2, dim1: altoMarco, dim2: anchoM, nota: 'Laterales del marco' },
+                            { etiqueta: 'Marco Superior', cantidad: 1, dim1: anchoInternoFrente - (2 * anchoM), dim2: anchoM, nota: 'Superior del marco' },
+                            { etiqueta: 'Marco Inferior', cantidad: 1, dim1: anchoInternoFrente - (2 * anchoM), dim2: anchoM, nota: 'Inferior del marco' },
+                            { etiqueta: 'Barra Divisoria', cantidad: 1, dim1: altoMarco - (2 * anchoM), dim2: anchoM, nota: 'Barra central vertical' }
+                        );
+                    }
+                    
                     return piezasBase
                         .filter(p => p.dim1 > 0.1 && p.dim2 > 0.1)
                         .map(p => ({
                             ...p,
-                            color: colorMap[p.etiqueta] || '#6c757d',
+                            color: p.etiqueta.includes('Marco') || p.etiqueta.includes('Barra') ? colorMap['Marco'] : (colorMap[p.etiqueta] || '#6c757d'),
                             shortCode: shortCodeMap[p.etiqueta] || '?'
                         }));
                 });
                 
-                // Cálculo de resultados de corte
                 const resultadoCorte = computed(() => {
                     const piezas = piezasCalculadas.value;
                     const sh = parseFloat(sheetHeight.value);
@@ -1083,7 +1078,6 @@
                     }
                 });
                 
-                // Cálculos de eficiencia
                 const totalPiecesArea = computed(() => {
                     return piezasCalculadas.value.reduce((sum, p) => {
                         if (p.etiqueta === 'Error') return sum;
@@ -1104,7 +1098,6 @@
                     return Math.min(100, Math.max(0, (totalPiecesArea.value / totalBoardsArea.value * 100).toFixed(1)));
                 });
                 
-                // Funciones para estilos de piezas
                 const getPieceStyle = (piece, currentSheetW, currentSheetH) => {
                     const safeSheetW = currentSheetW > 0 ? currentSheetW : 1;
                     const safeSheetH = currentSheetH > 0 ? currentSheetH : 1;
@@ -1129,7 +1122,6 @@
                            `ID: ${piece.id}`;
                 };
                 
-                // Controles de puertas
                 const toggleDoorLeft = () => {
                     isDoorLeftOpen.value = !isDoorLeftOpen.value;
                 };
@@ -1138,7 +1130,6 @@
                     isDoorRightOpen.value = !isDoorRightOpen.value;
                 };
                 
-                // Función para ajustar cámara
                 function fitCameraToObject(camera, object, controls, offset = 1.5) {
                     const boundingBox = new THREE.Box3();
                     boundingBox.setFromObject(object);
@@ -1184,7 +1175,6 @@
                     }
                 };
                 
-                // Inicialización Three.js
                 function initThreeJS() {
                     if (!rendererContainer.value || !THREE) return;
                     
@@ -1259,7 +1249,6 @@
                     renderer.value.render(scene.value, camera.value);
                 }
                 
-                // Actualización del modelo 3D
                 function updateFurnitureModel() {
                     if (!isRendererReady.value || !furnitureGroup.value) return;
                     
@@ -1280,6 +1269,8 @@
                     const H = parseFloat(alto.value);
                     const E_mm = parseFloat(espesor.value);
                     const luz = parseFloat(luzPuertas.value);
+                    const marco = incluirMarco.value;
+                    const anchoM = parseFloat(anchoMarco.value);
                     
                     if (isNaN(L) || isNaN(A) || isNaN(H) || isNaN(E_mm) || 
                         L <= 0 || A <= 0 || H <= 0 || E_mm <= 0 || isNaN(luz) || luz < 0) {
@@ -1324,27 +1315,40 @@
                             return mesh;
                         };
                         
-                        // Base
                         const baseGeo = new THREE.BoxGeometry(L, E_cm, A);
                         addMesh('Base', baseGeo, new THREE.Vector3(0, E_cm / 2, 0));
                         
-                        // Tapa
                         const tapaGeo = new THREE.BoxGeometry(L, E_cm, A);
                         addMesh('Tapa', tapaGeo, new THREE.Vector3(0, H - E_cm / 2, 0));
                         
-                        // Laterales
                         const latGeo = new THREE.BoxGeometry(E_cm, H, A);
                         addMesh('Lateral', latGeo, new THREE.Vector3(-L / 2 + E_cm / 2, H / 2, 0));
                         addMesh('Lateral', latGeo.clone(), new THREE.Vector3(L / 2 - E_cm / 2, H / 2, 0));
                         
-                        // Trasera
                         const traseraW = L - 2 * E_cm;
                         if (traseraW > 0.1) {
                             const traseraGeo = new THREE.BoxGeometry(traseraW, H, E_cm);
                             addMesh('Trasera', traseraGeo, new THREE.Vector3(0, H / 2, -A / 2 + E_cm / 2));
                         }
                         
-                        // Puertas con pivotes
+                        if (marco && anchoM > 0 && !isNaN(anchoM)) {
+                            const anchoInternoFrente = L - (2 * E_cm);
+                            const altoMarco = H - (2 * E_cm);
+                            const profundidadMarco = E_cm;
+                            const zPosMarco = A / 2 - E_cm - profundidadMarco / 2;
+                            
+                            const marcoLatGeo = new THREE.BoxGeometry(anchoM, altoMarco, profundidadMarco);
+                            addMesh('Marco', marcoLatGeo, new THREE.Vector3(-anchoInternoFrente / 2 + anchoM / 2, H / 2, zPosMarco));
+                            addMesh('Marco', marcoLatGeo.clone(), new THREE.Vector3(anchoInternoFrente / 2 - anchoM / 2, H / 2, zPosMarco));
+                            
+                            const marcoHorizGeo = new THREE.BoxGeometry(anchoInternoFrente - (2 * anchoM), anchoM, profundidadMarco);
+                            addMesh('Marco', marcoHorizGeo, new THREE.Vector3(0, H - E_cm - anchoM / 2, zPosMarco));
+                            addMesh('Marco', marcoHorizGeo.clone(), new THREE.Vector3(0, E_cm + anchoM / 2, zPosMarco));
+                            
+                            const barraDivGeo = new THREE.BoxGeometry(anchoM, altoMarco - (2 * anchoM), profundidadMarco);
+                            addMesh('Marco', barraDivGeo, new THREE.Vector3(0, H / 2, zPosMarco));
+                        }
+                        
                         const puertaGeo = new THREE.BoxGeometry(anchoPuerta, H, E_cm);
                         
                         const pivotLeft = new THREE.Group();
@@ -1367,7 +1371,6 @@
                         furnitureGroup.value.add(pivotRight);
                         doorRightPivotRef.value = markRaw(pivotRight);
                         
-                        // Aplicar rotaciones iniciales
                         if (pivotLeft.visible) {
                             pivotLeft.rotation.y = isDoorLeftOpen.value ? -doorOpenAngle : 0;
                         } else {
@@ -1392,7 +1395,6 @@
                     }
                 }
                 
-                // Hooks de ciclo de vida
                 onMounted(() => {
                     nextTick(() => {
                         initThreeJS();
@@ -1434,8 +1436,7 @@
                     doorRightPivotRef.value = null;
                 });
                 
-                // Watchers optimizados
-                watch([largo, ancho, alto, espesor, luzPuertas], () => {
+                watch([largo, ancho, alto, espesor, luzPuertas, incluirMarco, anchoMarco], () => {
                     if (isRendererReady.value) {
                         updateFurnitureModel();
                     }
@@ -1462,9 +1463,7 @@
                     });
                 }, { deep: true, flush: 'post' });
                 
-                // Retornar valores para el template
                 return {
-                    // Estados de entrada
                     largo,
                     ancho,
                     alto,
@@ -1474,8 +1473,9 @@
                     boardPrice,
                     luzPuertas,
                     kerfWidth,
+                    incluirMarco,
+                    anchoMarco,
                     
-                    // Estados 3D
                     rendererContainer,
                     isRendererReady,
                     renderError,
@@ -1483,7 +1483,6 @@
                     isDoorLeftOpen,
                     isDoorRightOpen,
                     
-                    // Datos computados
                     piezasCalculadas,
                     resultadoCorte,
                     totalPiecesArea,
@@ -1491,7 +1490,6 @@
                     wasteArea,
                     efficiency,
                     
-                    // Funciones
                     formatDecimal,
                     formatCurrency,
                     getPieceStyle,
@@ -1499,8 +1497,7 @@
                     getPieceLabel,
                     toggleDoorLeft,
                     toggleDoorRight,
-                    resetCamera,
-                    loadPreset
+                    resetCamera
                 };
             }
         }).mount('#app');
