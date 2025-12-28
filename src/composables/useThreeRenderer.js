@@ -1,8 +1,10 @@
 import { ref, watch, onMounted, onBeforeUnmount, nextTick, markRaw } from 'vue'
-import * as THREE from 'three'
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { colorMap } from '../config/constants'
 import { debounce } from '../utils/debounce'
+
+// Variables para almacenar los modulos cargados dinamicamente
+let THREE = null
+let OrbitControls = null
 
 export function useThreeRenderer(dimensionRefs, incluirMarco, anchoMarco) {
     const { largo, ancho, alto, espesor, luzPuertas } = dimensionRefs
@@ -17,6 +19,12 @@ export function useThreeRenderer(dimensionRefs, incluirMarco, anchoMarco) {
     const renderError = ref(null)
     const doorLeftPivotRef = ref(null)
     const doorRightPivotRef = ref(null)
+
+    // Nuevos estados para lazy loading
+    const isThreeLoaded = ref(false)
+    const isThreeLoading = ref(false)
+    const threeLoadError = ref(null)
+
     const pieceTypeVisibility = ref({
         Base: true,
         Tapa: true,
@@ -38,7 +46,59 @@ export function useThreeRenderer(dimensionRefs, incluirMarco, anchoMarco) {
         }
     }, 250)
 
+    /**
+     * Carga Three.js y OrbitControls dinamicamente
+     * @returns {Promise<boolean>} true si la carga fue exitosa
+     */
+    async function loadThreeJS() {
+        // Si ya esta cargado, retornar inmediatamente
+        if (isThreeLoaded.value && THREE && OrbitControls) {
+            return true
+        }
+
+        // Si ya esta en proceso de carga, esperar
+        if (isThreeLoading.value) {
+            // Esperar a que termine la carga actual
+            return new Promise((resolve) => {
+                const checkLoaded = setInterval(() => {
+                    if (!isThreeLoading.value) {
+                        clearInterval(checkLoaded)
+                        resolve(isThreeLoaded.value)
+                    }
+                }, 100)
+            })
+        }
+
+        isThreeLoading.value = true
+        threeLoadError.value = null
+
+        try {
+            // Cargar Three.js y OrbitControls en paralelo
+            const [threeModule, orbitControlsModule] = await Promise.all([
+                import('three'),
+                import('three/examples/jsm/controls/OrbitControls.js')
+            ])
+
+            THREE = threeModule
+            OrbitControls = orbitControlsModule.OrbitControls
+
+            isThreeLoaded.value = true
+            isThreeLoading.value = false
+
+            console.log('Three.js cargado exitosamente (lazy loading)')
+            return true
+        } catch (error) {
+            console.error('Error al cargar Three.js:', error)
+            threeLoadError.value = 'No se pudo cargar la libreria 3D. Por favor, recargue la pagina.'
+            isThreeLoading.value = false
+            isThreeLoaded.value = false
+            return false
+        }
+    }
+
     function fitCameraToObject(cam, object, ctrl, offset = 1.5) {
+        if (!THREE) return
+
         const boundingBox = new THREE.Box3()
         boundingBox.setFromObject(object)
 
@@ -92,7 +152,7 @@ export function useThreeRenderer(dimensionRefs, incluirMarco, anchoMarco) {
     }
 
     function initThreeJS() {
-        if (!rendererContainer.value || !THREE) return
+        if (!rendererContainer.value || !THREE || !OrbitControls) return
 
         try {
             const _scene = new THREE.Scene()
@@ -138,7 +198,7 @@ export function useThreeRenderer(dimensionRefs, incluirMarco, anchoMarco) {
     }
 
     function animate() {
-        if (!renderer.value || !scene.value || !camera.value) return
+        if (!renderer.value || !scene.value || !camera.value || !THREE) return
         animationFrameId = requestAnimationFrame(animate)
         controls.value.update()
 
@@ -166,7 +226,7 @@ export function useThreeRenderer(dimensionRefs, incluirMarco, anchoMarco) {
     }
 
     function updateFurnitureModel() {
-        if (!isRendererReady.value || !furnitureGroup.value) return
+        if (!isRendererReady.value || !furnitureGroup.value || !THREE) return
 
         while (furnitureGroup.value.children.length > 0) {
             const object = furnitureGroup.value.children[0]
@@ -343,12 +403,30 @@ export function useThreeRenderer(dimensionRefs, incluirMarco, anchoMarco) {
         doorRightPivotRef.value = null
     }
 
+    /**
+     * Inicializa el renderer despues de cargar Three.js dinamicamente
+     */
+    async function initializeRenderer() {
+        // Cargar Three.js dinamicamente
+        const loaded = await loadThreeJS()
+
+        if (!loaded) {
+            renderError.value = threeLoadError.value || 'Error al cargar Three.js'
+            return
+        }
+
+        // Una vez cargado, inicializar el renderer
+        initThreeJS()
+
+        if (isRendererReady.value) {
+            updateFurnitureModel()
+        }
+    }
+
     onMounted(() => {
         nextTick(() => {
-            initThreeJS()
-            if (isRendererReady.value) {
-                updateFurnitureModel()
-            }
+            // Iniciar la carga asincrona de Three.js
+            initializeRenderer()
         })
     })
 
@@ -391,6 +469,10 @@ export function useThreeRenderer(dimensionRefs, incluirMarco, anchoMarco) {
         isDoorRightOpen,
         resetCamera,
         toggleDoorLeft,
-        toggleDoorRight
+        toggleDoorRight,
+        // Nuevos estados para lazy loading
+        isThreeLoaded,
+        isThreeLoading,
+        threeLoadError
     }
 }

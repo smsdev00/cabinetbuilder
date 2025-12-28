@@ -184,20 +184,7 @@ body {
     border-radius: 8px;
 }
 
-.placed-piece {
-    position: absolute;
-    border: 2px solid rgba(0, 0, 0, 0.3);
-    box-sizing: border-box;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 0.75rem;
-    font-weight: 700;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
-    transition: all 0.2s ease;
-    cursor: pointer;
-}
+/* .placed-piece movido a la seccion de accesibilidad para mejor contraste */
 
 .placed-piece:hover {
     transform: scale(1.05);
@@ -371,5 +358,119 @@ body {
 
     #renderer-container {
         height: 350px;
+    }
+}
+
+/* =============================================
+   Mejoras de Accesibilidad (a11y)
+   ============================================= */
+
+/* Skip link - oculto visualmente pero accesible con teclado */
+.skip-link {
+    position: absolute;
+    top: -40px;
+    left: 0;
+    background: var(--primary-color);
+    color: white;
+    padding: 8px 16px;
+    z-index: 1000;
+    text-decoration: none;
+    font-weight: 600;
+    border-radius: 0 0 8px 0;
+    transition: top 0.3s ease;
+}
+
+.skip-link:focus {
+    top: 0;
+    outline: 3px solid var(--warning-color);
+    outline-offset: 2px;
+}
+
+/* Focus visible para botones */
+.btn:focus-visible,
+.btn-modern:focus-visible {
+    outline: 3px solid var(--warning-color);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.3);
+}
+
+/* Focus visible para inputs y selects */
+.form-control:focus-visible,
+.form-select:focus-visible {
+    outline: 3px solid var(--primary-color);
+    outline-offset: 2px;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.2);
+}
+
+/* Focus visible para checkboxes */
+.form-check-input:focus-visible {
+    outline: 3px solid var(--primary-color);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.2);
+}
+
+/* Focus visible para links */
+a:focus-visible {
+    outline: 3px solid var(--warning-color);
+    outline-offset: 2px;
+}
+
+/* Mejora de contraste en .placed-piece */
+.placed-piece {
+    position: absolute;
+    border: 2px solid rgba(0, 0, 0, 0.5);
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.9), -1px -1px 3px rgba(0, 0, 0, 0.9);
+    transition: all 0.2s ease;
+    cursor: pointer;
+    /* Fondo semi-transparente oscuro para mejor contraste */
+    background-image: linear-gradient(rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.15));
+    background-blend-mode: multiply;
+}
+
+/* Focus visible para piezas colocadas interactivas */
+.placed-piece:focus-visible {
+    outline: 3px solid var(--warning-color);
+    outline-offset: 2px;
+    z-index: 20;
+}
+
+/* Estilos para elementos deshabilitados */
+.btn:disabled,
+.btn-modern:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Asegurar que el foco sea visible en modo de alto contraste */
+@media (prefers-contrast: high) {
+    .btn:focus-visible,
+    .form-control:focus-visible,
+    .form-select:focus-visible,
+    .form-check-input:focus-visible {
+        outline: 4px solid currentColor;
+        outline-offset: 3px;
+    }
+}
+
+/* Respetar preferencia de movimiento reducido */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+
+    .skip-link {
+        transition: none;
     }
 }

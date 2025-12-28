@@ -1,4 +1,5 @@
 <template>
+    <a href="#main-content" class="skip-link">Saltar al contenido principal</a>
     <div class="container-fluid">
         <div class="main-card">
             <div class="header-section">
@@ -6,137 +7,39 @@
                 <div class="version">Version 2.1 - Con Marco Interno Opcional</div>
             </div>
 
-            <div class="p-4">
+            <main id="main-content" class="p-4">
                 <div class="row g-4 mb-4">
                     <div class="col-lg-4">
-                        <div class="input-card card">
-                            <div class="card-header">
-                                Dimensiones del Mueble
-                            </div>
-                            <div class="card-body">
-                                <div class="row g-3">
-                                    <div class="col-md-6">
-                                        <label for="largo" class="form-label">Largo (cm)</label>
-                                        <input type="number" id="largo" class="form-control" v-model.number="largo" min="1" step="0.1">
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label for="ancho" class="form-label">Ancho/Profundidad (cm)</label>
-                                        <input type="number" id="ancho" class="form-control" v-model.number="ancho" min="1" step="0.1">
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label for="alto" class="form-label">Alto (cm)</label>
-                                        <input type="number" id="alto" class="form-control" v-model.number="alto" min="1" step="0.1">
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label for="espesor" class="form-label">Espesor Material (mm)</label>
-                                        <select id="espesor" class="form-select" v-model.number="espesor">
-                                            <option :value="5.5">5.5mm (Fino)</option>
-                                            <option :value="9">9mm (Estandar)</option>
-                                            <option :value="12">12mm (Medio)</option>
-                                            <option :value="15">15mm (Grueso)</option>
-                                            <option :value="18">18mm (Extra Grueso)</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-12">
-                                        <label for="luzPuertas" class="form-label">Separacion entre Puertas (cm)</label>
-                                        <input type="number" id="luzPuertas" class="form-control" v-model.number="luzPuertas" min="0" max="5" step="0.1">
-                                        <small class="text-muted">Espacio entre las dos puertas frontales</small>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        <InputDimensiones
+                            v-model:largo="largo"
+                            v-model:ancho="ancho"
+                            v-model:alto="alto"
+                            v-model:espesor="espesor"
+                            v-model:luzPuertas="luzPuertas"
+                        />
                     </div>
 
                     <div class="col-lg-4">
-                        <div class="input-card card">
-                            <div class="card-header">
-                                Marco Interno (Opcional)
-                            </div>
-                            <div class="card-body">
-                                <div class="form-check-modern form-check form-switch mb-3">
-                                    <input class="form-check-input" type="checkbox" id="incluirMarco" v-model="incluirMarco">
-                                    <label class="form-check-label" for="incluirMarco">
-                                        Incluir Marco Interno
-                                    </label>
-                                </div>
-
-                                <div v-if="incluirMarco" class="row g-3">
-                                    <div class="col-12">
-                                        <label for="anchoMarco" class="form-label">Ancho del Marco (cm)</label>
-                                        <input type="number" id="anchoMarco" class="form-control" v-model.number="anchoMarco" min="1" max="10" step="0.1">
-                                        <small class="text-muted">Ancho de las tiras del marco perimetral</small>
-                                    </div>
-                                    <div class="col-12">
-                                        <div class="alert alert-info mb-0">
-                                            <strong>Nota:</strong> El marco incluye:
-                                            <ul class="mb-0 mt-2 small">
-                                                <li>Tiras laterales (2)</li>
-                                                <li>Tira superior (1)</li>
-                                                <li>Tira inferior (1)</li>
-                                                <li>Barra divisoria central (1)</li>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div v-else class="text-center text-muted py-4">
-                                    <p>Active esta opcion para agregar un marco donde apoyaran las puertas</p>
-                                </div>
-                            </div>
-                        </div>
+                        <InputMarco
+                            v-model:incluirMarco="incluirMarco"
+                            v-model:anchoMarco="anchoMarco"
+                        />
                     </div>
 
                     <div class="col-lg-4">
-                        <div class="input-card card">
-                            <div class="card-header">
-                                Datos de la Placa MDF
-                            </div>
-                            <div class="card-body">
-                                <div class="row g-3">
-                                    <div class="col-md-6">
-                                        <label for="sheetHeight" class="form-label">Alto Placa (cm)</label>
-                                        <input type="number" id="sheetHeight" class="form-control" v-model.number="sheetHeight" min="1">
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label for="sheetWidth" class="form-label">Ancho Placa (cm)</label>
-                                        <input type="number" id="sheetWidth" class="form-control" v-model.number="sheetWidth" min="1">
-                                    </div>
-                                    <div class="col-12">
-                                        <label for="boardPrice" class="form-label">Precio por Placa ($)</label>
-                                        <input type="number" id="boardPrice" class="form-control" v-model.number="boardPrice" min="0" step="any">
-                                    </div>
-                                    <div class="col-12">
-                                        <label for="kerfWidth" class="form-label">Ancho de Corte/Kerf (mm)</label>
-                                        <input type="number" id="kerfWidth" class="form-control" v-model.number="kerfWidth" min="0" max="10" step="0.1">
-                                        <small class="text-muted">Perdida de material por corte de sierra</small>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        <InputPlaca
+                            v-model:sheetHeight="sheetHeight"
+                            v-model:sheetWidth="sheetWidth"
+                            v-model:boardPrice="boardPrice"
+                            v-model:kerfWidth="kerfWidth"
+                        />
                     </div>
                 </div>
 
-                <div :class="['results-banner', resultadoCorte.error ? 'error' : '']">
-                    <div class="text-center">
-                        <div v-if="!resultadoCorte.error">
-                            <div class="stat-box">
-                                <span class="stat-label">Placas:</span>
-                                <span class="stat-value">{{ resultadoCorte.count }}</span>
-                            </div>
-                            <div class="stat-box">
-                                <span class="stat-label">Costo:</span>
-                                <span class="stat-value">{{ formatCurrency(resultadoCorte.totalPrice) }}</span>
-                            </div>
-                            <div class="stat-box">
-                                <span class="stat-label">Eficiencia:</span>
-                                <span class="stat-value">{{ efficiency }}%</span>
-                            </div>
-                        </div>
-                        <div v-else class="text-white">
-                            <strong>Error:</strong> {{ resultadoCorte.error }}
-                        </div>
-                    </div>
-                </div>
+                <ResultsBanner
+                    :resultadoCorte="resultadoCorte"
+                    :efficiency="efficiency"
+                />
 
                 <div v-if="!resultadoCorte.error && resultadoCorte.count > 0" class="optimization-info">
                     <h5 class="fw-bold mb-2">Analisis de Aprovechamiento</h5>
@@ -157,11 +60,27 @@
 
                 <div class="mb-4">
                     <h3 class="text-center mb-3 fw-bold">Visualizacion 3D Interactiva</h3>
-                    <div id="renderer-container" ref="rendererContainer">
-                        <div v-if="!isRendererReady" class="renderer-placeholder">
+                    <div id="renderer-container" ref="rendererContainer" role="img" aria-label="Visualizacion 3D del mueble">
+                        <!-- Estado: Cargando Three.js (lazy loading) -->
+                        <div v-if="isThreeLoading && !isThreeLoaded" class="renderer-placeholder">
                             <div class="loading-spinner mb-2"></div>
-                            <div>Cargando visor 3D...</div>
+                            <div>Descargando libreria 3D...</div>
+                            <small class="text-muted mt-2 d-block">Three.js se carga bajo demanda para mejorar el rendimiento</small>
                         </div>
+                        <!-- Estado: Error al cargar Three.js -->
+                        <div v-else-if="threeLoadError" class="renderer-placeholder text-danger" role="alert">
+                            <div class="mb-2">Error de carga</div>
+                            <div>{{ threeLoadError }}</div>
+                            <button @click="location.reload()" class="btn btn-sm btn-outline-danger mt-3">
+                                Recargar pagina
+                            </button>
+                        </div>
+                        <!-- Estado: Three.js cargado, inicializando renderer -->
+                        <div v-else-if="isThreeLoaded && !isRendererReady" class="renderer-placeholder">
+                            <div class="loading-spinner mb-2"></div>
+                            <div>Inicializando visor 3D...</div>
+                        </div>
+                        <!-- Estado: Renderer listo pero con error en modelo -->
                         <div v-if="isRendererReady && renderError" class="renderer-placeholder text-danger">
                             Error: {{ renderError }}
                         </div>
@@ -172,7 +91,10 @@
                             <div class="col-md-6">
                                 <div class="control-section">
                                     <h4>Visibilidad de Piezas</h4>
-                                    <div v-if="!isRendererReady" class="text-center text-muted">
+                                    <div v-if="isThreeLoading" class="text-center text-muted">
+                                        Cargando libreria 3D...
+                                    </div>
+                                    <div v-else-if="!isRendererReady" class="text-center text-muted">
                                         Generando controles...
                                     </div>
                                     <template v-else>
@@ -188,14 +110,17 @@
                             <div class="col-md-6">
                                 <div class="control-section">
                                     <h4>Control de Puertas</h4>
-                                    <div v-if="!isRendererReady" class="text-center text-muted">
+                                    <div v-if="isThreeLoading" class="text-center text-muted">
+                                        Cargando libreria 3D...
+                                    </div>
+                                    <div v-else-if="!isRendererReady" class="text-center text-muted">
                                         Esperando modelo 3D...
                                     </div>
                                     <div v-else class="door-controls">
-                                        <button @click="toggleDoorLeft" class="btn btn-modern btn-primary-modern" :disabled="!pieceTypeVisibility['Puerta']">
+                                        <button @click="toggleDoorLeft" class="btn btn-modern btn-primary-modern" :disabled="!pieceTypeVisibility['Puerta']" :aria-pressed="isDoorLeftOpen">
                                             {{ isDoorLeftOpen ? 'Cerrar' : 'Abrir' }} Puerta Izq.
                                         </button>
-                                        <button @click="toggleDoorRight" class="btn btn-modern btn-primary-modern" :disabled="!pieceTypeVisibility['Puerta']">
+                                        <button @click="toggleDoorRight" class="btn btn-modern btn-primary-modern" :disabled="!pieceTypeVisibility['Puerta']" :aria-pressed="isDoorRightOpen">
                                             {{ isDoorRightOpen ? 'Cerrar' : 'Abrir' }} Puerta Der.
                                         </button>
                                         <button @click="resetCamera" class="btn btn-modern btn-success-modern">
@@ -210,71 +135,16 @@
 
                 <div class="section-divider"></div>
 
-                <div class="mb-4">
-                    <h3 class="text-center mb-3 fw-bold">Despiece Detallado</h3>
-                    <div class="table-responsive">
-                        <table class="table table-modern table-striped table-hover">
-                            <thead class="text-white">
-                                <tr>
-                                    <th>Pieza</th>
-                                    <th>Cod.</th>
-                                    <th>Cant.</th>
-                                    <th>Medida 1 (cm)</th>
-                                    <th>Medida 2 (cm)</th>
-                                    <th>Color</th>
-                                    <th>Area (cm2)</th>
-                                    <th>Notas</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr v-if="piezasCalculadas.length === 0 || piezasCalculadas[0].etiqueta === 'Error'">
-                                    <td colspan="8" class="text-center fst-italic text-muted">
-                                        {{ piezasCalculadas.length > 0 ? piezasCalculadas[0].dim1 : 'Ingrese dimensiones validas.' }}
-                                    </td>
-                                </tr>
-                                <tr v-else v-for="pieza in piezasCalculadas" :key="pieza.etiqueta + pieza.dim1 + pieza.dim2">
-                                    <td class="fw-bold">{{ pieza.etiqueta }}</td>
-                                    <td><span class="badge bg-secondary">{{ pieza.shortCode }}</span></td>
-                                    <td>{{ pieza.cantidad }}</td>
-                                    <td>{{ formatDecimal(pieza.dim1) }}</td>
-                                    <td>{{ formatDecimal(pieza.dim2) }}</td>
-                                    <td><span class="piece-color-indicator" :style="{ backgroundColor: pieza.color }"></span></td>
-                                    <td>{{ formatDecimal(pieza.dim1 * pieza.dim2 * pieza.cantidad) }}</td>
-                                    <td class="small">{{ pieza.nota || '-' }}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+                <DesgloseTable :piezasCalculadas="piezasCalculadas" />
 
                 <div class="section-divider"></div>
 
-                <div class="mb-4">
-                    <h3 class="text-center mb-3 fw-bold">Planos de Corte Optimizados</h3>
-                    <p v-if="resultadoCorte.count > 0 && !resultadoCorte.error" class="text-center text-muted mb-4">
-                        Distribucion optimizada de piezas en las placas MDF
-                    </p>
-                    <div v-if="resultadoCorte.boardData && resultadoCorte.boardData.length > 0 && !resultadoCorte.error" class="row">
-                        <div v-for="board in resultadoCorte.boardData" :key="board.id" class="col-lg-6 mb-4">
-                            <div class="board-header">
-                                Placa #{{ board.id }}
-                                <small class="text-muted">({{ board.pieces.length }} piezas)</small>
-                            </div>
-                            <div class="sheet-layout-container" :style="{ aspectRatio: sheetWidth / sheetHeight, maxWidth: '600px' }">
-                                <div v-for="piece in board.pieces" :key="piece.id"
-                                     class="placed-piece"
-                                     :style="getPieceStyle(piece, sheetWidth, sheetHeight)"
-                                     :title="getPieceTooltip(piece)">
-                                    {{ piece.shortCode }}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div v-else-if="!resultadoCorte.error && piezasCalculadas.length > 0 && piezasCalculadas[0].etiqueta !== 'Error'"
-                         class="text-center text-muted fst-italic">
-                        No se generaron planos de corte. Verifique las dimensiones.
-                    </div>
-                </div>
+                <CuttingPlans
+                    :resultadoCorte="resultadoCorte"
+                    :sheetWidth="sheetWidth"
+                    :sheetHeight="sheetHeight"
+                    :piezasCalculadas="piezasCalculadas"
+                />
 
                 <div class="info-note">
                     <h5 class="fw-bold mb-3">Notas Importantes y Recomendaciones</h5>
@@ -309,7 +179,7 @@
                         <strong class="text-danger">NO debe usarse como plano profesional sin validacion exhaustiva.</strong> El uso es bajo su exclusiva responsabilidad.
                     </p>
                 </div>
-            </div>
+            </main>
         </div>
 
         <p class="text-center text-white mt-4 small">
@@ -324,7 +194,15 @@ import { usePiezas } from './composables/usePiezas'
 import { useCorte } from './composables/useCorte'
 import { useThreeRenderer } from './composables/useThreeRenderer'
 import { useLocalStorage } from './composables/useLocalStorage'
-import { formatDecimal, formatCurrency, getPieceStyle, getPieceTooltip, getPieceLabel } from './utils/formatters'
+import { getPieceLabel } from './utils/formatters'
+
+// Componentes
+import InputDimensiones from './components/InputDimensiones.vue'
+import InputMarco from './components/InputMarco.vue'
+import InputPlaca from './components/InputPlaca.vue'
+import ResultsBanner from './components/ResultsBanner.vue'
+import DesgloseTable from './components/DesgloseTable.vue'
+import CuttingPlans from './components/CuttingPlans.vue'
 
 // Refs de entrada - dimensiones del mueble (persistidos en localStorage)
 const largo = useLocalStorage('cabinet_largo', defaults.largo)
@@ -360,7 +238,7 @@ const { resultadoCorte, totalPiecesArea, totalBoardsArea, wasteArea, efficiency 
     { sheetHeight, sheetWidth, boardPrice, kerfWidth }
 )
 
-// Composable para renderizado 3D
+// Composable para renderizado 3D (con lazy loading de Three.js)
 const {
     rendererContainer,
     isRendererReady,
@@ -370,7 +248,11 @@ const {
     isDoorRightOpen,
     resetCamera,
     toggleDoorLeft,
-    toggleDoorRight
+    toggleDoorRight,
+    // Estados de lazy loading
+    isThreeLoaded,
+    isThreeLoading,
+    threeLoadError
 } = useThreeRenderer(
     { largo, ancho, alto, espesor, luzPuertas },
     incluirMarco,
