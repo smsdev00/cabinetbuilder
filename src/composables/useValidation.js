@@ -30,7 +30,8 @@ export function useValidation(valueRef, rules = {}) {
         max = 500,
         name = 'Campo',
         allowZero = false,
-        required = true
+        required = true,
+        showWarnings = true
     } = rules
 
     // Estado interno
@@ -67,8 +68,8 @@ export function useValidation(valueRef, rules = {}) {
 
         validationResult.value = result
 
-        // Verificar advertencias solo si el valor es valido
-        if (result.isValid && typeof result.value === 'number') {
+        // Verificar advertencias solo si el valor es valido y showWarnings esta activo
+        if (showWarnings && result.isValid && typeof result.value === 'number') {
             warningResult.value = checkWarningState(result.value, min, max)
         } else {
             warningResult.value = { isWarning: false, message: null }

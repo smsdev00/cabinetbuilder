@@ -47,7 +47,6 @@
                         type="number"
                         id="boardPrice"
                         class="form-control"
-                        :class="priceValidation.validationClass.value"
                         v-model.number="boardPrice"
                         min="0"
                         :max="VALIDATION_LIMITS.MAX_PRICE"
@@ -56,9 +55,6 @@
                     <div v-if="priceValidation.hasError.value" class="invalid-feedback">
                         {{ priceValidation.errorMessage.value }}
                     </div>
-                    <div v-else-if="priceValidation.hasWarning.value" class="warning-feedback">
-                        {{ priceValidation.warningMessage.value }}
-                    </div>
                 </div>
                 <div class="col-12">
                     <label for="kerfWidth" class="form-label">Ancho de Corte/Kerf (mm)</label>
@@ -66,7 +62,6 @@
                         type="number"
                         id="kerfWidth"
                         class="form-control"
-                        :class="kerfValidation.validationClass.value"
                         v-model.number="kerfWidth"
                         min="0"
                         :max="VALIDATION_LIMITS.MAX_KERF"
@@ -76,9 +71,6 @@
                     <small id="kerfWidth-help" class="text-muted">Perdida de material por corte de sierra</small>
                     <div v-if="kerfValidation.hasError.value" class="invalid-feedback">
                         {{ kerfValidation.errorMessage.value }}
-                    </div>
-                    <div v-else-if="kerfValidation.hasWarning.value" class="warning-feedback">
-                        {{ kerfValidation.warningMessage.value }}
                     </div>
                 </div>
             </div>
