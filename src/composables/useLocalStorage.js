@@ -1,11 +1,20 @@
 import { ref, watch } from 'vue'
 
 /**
- * Composable para sincronizar un ref con localStorage
- * @param {string} key - Clave para localStorage
- * @param {any} defaultValue - Valor por defecto si no existe en localStorage
- * @param {number} debounceMs - Tiempo de debounce en milisegundos (default: 500)
- * @returns {import('vue').Ref} - Ref sincronizado con localStorage
+ * @description Composable de Vue para sincronizar un ref reactivo con localStorage.
+ * Los cambios se persisten automaticamente con debounce para evitar escrituras excesivas.
+ * Maneja errores de parseo y cuota de almacenamiento de forma graceful.
+ * @param {string} key - Clave unica para almacenar en localStorage
+ * @param {any} defaultValue - Valor por defecto si no existe en localStorage o hay error de parseo
+ * @param {number} [debounceMs=500] - Tiempo de debounce en milisegundos antes de persistir cambios
+ * @returns {import('vue').Ref} - Ref reactivo sincronizado bidirecionalmente con localStorage
+ * @example
+ * // En un componente Vue
+ * const nombre = useLocalStorage('usuario-nombre', 'Anonimo')
+ * nombre.value = 'Juan' // Se guarda automaticamente en localStorage despues de 500ms
+ *
+ * // Con debounce personalizado
+ * const config = useLocalStorage('app-config', { tema: 'oscuro' }, 1000)
  */
 export function useLocalStorage(key, defaultValue, debounceMs = 500) {
     // Intentar leer el valor inicial desde localStorage

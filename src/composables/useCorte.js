@@ -1,6 +1,35 @@
 import { computed } from 'vue'
 import { fitPiezasEnTablas } from '../services/packingService'
 
+/**
+ * @description Composable que gestiona el calculo de corte de piezas en placas/tableros.
+ * Utiliza el algoritmo de bin packing para distribuir las piezas de forma eficiente
+ * y calcula metricas como cantidad de placas, costo total, area de desperdicio y eficiencia.
+ * @param {import('vue').ComputedRef<Array>} piezasCalculadas - Computed ref con las piezas a cortar
+ * @param {Object} refs - Objeto con refs reactivos de configuracion de placas
+ * @param {import('vue').Ref<number>} refs.sheetHeight - Alto de la placa en cm
+ * @param {import('vue').Ref<number>} refs.sheetWidth - Ancho de la placa en cm
+ * @param {import('vue').Ref<number>} refs.boardPrice - Precio por placa
+ * @param {import('vue').Ref<number>} refs.kerfWidth - Ancho del corte de sierra en mm
+ * @returns {Object} - Objeto con computed refs para resultados del corte
+ * @returns {import('vue').ComputedRef<Object>} returns.resultadoCorte - Resultado principal con count, totalPrice, boardData, error
+ * @returns {import('vue').ComputedRef<number>} returns.totalPiecesArea - Area total de todas las piezas en cm2
+ * @returns {import('vue').ComputedRef<number>} returns.totalBoardsArea - Area total de las placas usadas en cm2
+ * @returns {import('vue').ComputedRef<number>} returns.wasteArea - Area de desperdicio en cm2
+ * @returns {import('vue').ComputedRef<number>} returns.efficiency - Porcentaje de eficiencia del corte (0-100)
+ * @example
+ * const { piezasCalculadas } = usePiezas(dimensionRefs)
+ * const {
+ *   resultadoCorte,
+ *   totalPiecesArea,
+ *   wasteArea,
+ *   efficiency
+ * } = useCorte(piezasCalculadas, { sheetHeight, sheetWidth, boardPrice, kerfWidth })
+ *
+ * // Acceder a resultados
+ * console.log(resultadoCorte.value.count) // Numero de placas necesarias
+ * console.log(efficiency.value) // "85.5" (porcentaje)
+ */
 export function useCorte(piezasCalculadas, refs) {
     const { sheetHeight, sheetWidth, boardPrice, kerfWidth } = refs
 

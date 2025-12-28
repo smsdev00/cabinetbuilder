@@ -1,4 +1,23 @@
-export const colorMap = {
+import type { ColorMap, ShortCodeMap, Defaults, PieceLabelsMap } from '../types'
+
+/**
+ * Limites de validacion para inputs numericos
+ */
+export const VALIDATION_LIMITS = {
+    MIN_DIMENSION: 1,
+    MAX_DIMENSION: 500,
+    MAX_SHEET_DIMENSION: 400,
+    MAX_PRICE: 1000000,
+    MIN_ESPESOR: 3,
+    MAX_ESPESOR: 50,
+    MAX_LUZ_PUERTAS: 10,
+    MAX_ANCHO_MARCO: 20,
+    MAX_KERF: 10
+} as const
+
+export type ValidationLimits = typeof VALIDATION_LIMITS
+
+export const colorMap: ColorMap = {
     'Base': '#dc3545',
     'Tapa': '#fd7e14',
     'Lateral': '#ffc107',
@@ -8,7 +27,7 @@ export const colorMap = {
     'Error': '#6c757d'
 }
 
-export const shortCodeMap = {
+export const shortCodeMap: ShortCodeMap = {
     'Base': 'B',
     'Tapa': 'T',
     'Lateral': 'L',
@@ -21,7 +40,7 @@ export const shortCodeMap = {
     'Error': 'ERR'
 }
 
-export const defaults = {
+export const defaults: Defaults = {
     largo: 89,
     ancho: 89,
     alto: 180,
@@ -35,7 +54,7 @@ export const defaults = {
     incluirMarco: true
 }
 
-export const pieceLabels = {
+export const pieceLabels: PieceLabelsMap = {
     'Base': 'Base',
     'Tapa': 'Tapa',
     'Lateral': 'Laterales',

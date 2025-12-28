@@ -20,10 +20,10 @@ describe('formatDecimal', () => {
     expect(formatDecimal(-0.1)).toBe('-0.1')
   })
 
-  it('should return non-number values as-is', () => {
+  it('should return non-number values as string', () => {
     expect(formatDecimal('text')).toBe('text')
-    expect(formatDecimal(null)).toBe(null)
-    expect(formatDecimal(undefined)).toBe(undefined)
+    expect(formatDecimal(null)).toBe('null')
+    expect(formatDecimal(undefined)).toBe('undefined')
   })
 })
 

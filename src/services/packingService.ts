@@ -1,11 +1,27 @@
 import { formatDecimal } from '../utils/formatters'
+import type { Pieza, Hoja, Espacio, PiezaColocada, PiezaInterna, ResultadoColocacion } from '../types'
 
-export function fitPiezasEnTablas(piezasInput, sheetW, sheetH, kerf) {
-    const hojas = []
+/**
+ * Algoritmo de bin packing para distribuir piezas en placas MDF
+ * Utiliza el algoritmo First Fit Decreasing (FFD) con rotacion opcional
+ *
+ * @param piezasInput - Lista de piezas a colocar
+ * @param sheetW - Ancho de la placa en cm
+ * @param sheetH - Alto de la placa en cm
+ * @param kerf - Ancho del corte en mm
+ * @returns Lista de hojas con las piezas colocadas
+ */
+export function fitPiezasEnTablas(
+    piezasInput: Pieza[],
+    sheetW: number,
+    sheetH: number,
+    kerf: number
+): Hoja[] {
+    const hojas: Hoja[] = []
     let globalPieceIdCounter = 1
     const kerfCm = kerf / 10
 
-    function crearHoja(id) {
+    function crearHoja(id: number): Hoja {
         return {
             id: id,
             ocupados: [],
@@ -13,7 +29,7 @@ export function fitPiezasEnTablas(piezasInput, sheetW, sheetH, kerf) {
         }
     }
 
-    function puedeColocar(pw, ph, sp) {
+    function puedeColocar(pw: number, ph: number, sp: Espacio): ResultadoColocacion {
         const wWithKerf = pw + kerfCm
         const hWithKerf = ph + kerfCm
         const normal = wWithKerf <= sp.w && hWithKerf <= sp.h
@@ -21,8 +37,8 @@ export function fitPiezasEnTablas(piezasInput, sheetW, sheetH, kerf) {
         return { cabe: normal || rotated, necesitaRotar: !normal && rotated }
     }
 
-    function colocarPiezaEnHoja(hoja, pOrig) {
-        hoja.espacios.sort((a, b) => {
+    function colocarPiezaEnHoja(hoja: Hoja, pOrig: PiezaInterna): boolean {
+        hoja.espacios.sort((a: Espacio, b: Espacio) => {
             const areaA = a.w * a.h
             const areaB = b.w * b.h
             return areaA - areaB
@@ -37,7 +53,7 @@ export function fitPiezasEnTablas(piezasInput, sheetW, sheetH, kerf) {
                 const w = rotar ? pOrig.h : pOrig.w
                 const h = rotar ? pOrig.w : pOrig.h
 
-                hoja.ocupados.push({
+                const piezaColocada: PiezaColocada = {
                     id: pOrig.id,
                     x: sp.x,
                     y: sp.y,
@@ -47,8 +63,11 @@ export function fitPiezasEnTablas(piezasInput, sheetW, sheetH, kerf) {
                     color: pOrig.color,
                     shortCode: pOrig.shortCode,
                     originalDim1: pOrig.originalDim1,
-                    originalDim2: pOrig.originalDim2
-                })
+                    originalDim2: pOrig.originalDim2,
+                    rotated: rotar
+                }
+
+                hoja.ocupados.push(piezaColocada)
 
                 hoja.espacios.splice(i, 1)
 
@@ -80,7 +99,7 @@ export function fitPiezasEnTablas(piezasInput, sheetW, sheetH, kerf) {
         return false
     }
 
-    let todas = []
+    const todas: PiezaInterna[] = []
     for (const pIn of piezasInput) {
         const pw = pIn.dim1
         const ph = pIn.dim2
@@ -107,7 +126,7 @@ export function fitPiezasEnTablas(piezasInput, sheetW, sheetH, kerf) {
         }
     }
 
-    todas.sort((a, b) => b.area - a.area)
+    todas.sort((a: PiezaInterna, b: PiezaInterna) => b.area - a.area)
 
     for (const p of todas) {
         let colocada = false
