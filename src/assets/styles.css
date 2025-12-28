@@ -267,6 +267,10 @@ body {
     background: #f8fafc;
 }
 
+.form-check-modern.form-switch {
+    padding-left: 4em;
+}
+
 .form-check-modern .form-check-input {
     width: 3em;
     height: 1.5em;

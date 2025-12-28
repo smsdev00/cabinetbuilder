@@ -2,6 +2,7 @@ import { ref, watch, onMounted, onBeforeUnmount, nextTick, markRaw } from 'vue'
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { colorMap } from '../config/constants'
+import { debounce } from '../utils/debounce'
 
 export function useThreeRenderer(dimensionRefs, incluirMarco, anchoMarco) {
     const { largo, ancho, alto, espesor, luzPuertas } = dimensionRefs
@@ -29,6 +30,13 @@ export function useThreeRenderer(dimensionRefs, incluirMarco, anchoMarco) {
 
     let animationFrameId = null
     const doorOpenAngle = Math.PI / 1.8
+
+    // Debounced version of updateFurnitureModel to prevent excessive renders
+    const debouncedUpdateModel = debounce(() => {
+        if (isRendererReady.value) {
+            updateFurnitureModel()
+        }
+    }, 250)
 
     function fitCameraToObject(cam, object, ctrl, offset = 1.5) {
         const boundingBox = new THREE.Box3()
@@ -345,13 +353,12 @@ export function useThreeRenderer(dimensionRefs, incluirMarco, anchoMarco) {
     })
 
     onBeforeUnmount(() => {
+        debouncedUpdateModel.cancel()
         cleanup()
     })
 
     watch([largo, ancho, alto, espesor, luzPuertas, incluirMarco, anchoMarco], () => {
-        if (isRendererReady.value) {
-            updateFurnitureModel()
-        }
+        debouncedUpdateModel()
     }, { immediate: false })
 
     watch(pieceTypeVisibility, (newVisibility) => {

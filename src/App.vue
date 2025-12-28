@@ -319,29 +319,29 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
 import { defaults } from './config/constants'
 import { usePiezas } from './composables/usePiezas'
 import { useCorte } from './composables/useCorte'
 import { useThreeRenderer } from './composables/useThreeRenderer'
+import { useLocalStorage } from './composables/useLocalStorage'
 import { formatDecimal, formatCurrency, getPieceStyle, getPieceTooltip, getPieceLabel } from './utils/formatters'
 
-// Refs de entrada - dimensiones del mueble
-const largo = ref(defaults.largo)
-const ancho = ref(defaults.ancho)
-const alto = ref(defaults.alto)
-const espesor = ref(defaults.espesor)
-const luzPuertas = ref(defaults.luzPuertas)
+// Refs de entrada - dimensiones del mueble (persistidos en localStorage)
+const largo = useLocalStorage('cabinet_largo', defaults.largo)
+const ancho = useLocalStorage('cabinet_ancho', defaults.ancho)
+const alto = useLocalStorage('cabinet_alto', defaults.alto)
+const espesor = useLocalStorage('cabinet_espesor', defaults.espesor)
+const luzPuertas = useLocalStorage('cabinet_luzPuertas', defaults.luzPuertas)
 
-// Refs de entrada - marco
-const incluirMarco = ref(defaults.incluirMarco)
-const anchoMarco = ref(defaults.anchoMarco)
+// Refs de entrada - marco (persistidos en localStorage)
+const incluirMarco = useLocalStorage('cabinet_incluirMarco', defaults.incluirMarco)
+const anchoMarco = useLocalStorage('cabinet_anchoMarco', defaults.anchoMarco)
 
-// Refs de entrada - placa MDF
-const sheetHeight = ref(defaults.sheetHeight)
-const sheetWidth = ref(defaults.sheetWidth)
-const boardPrice = ref(defaults.boardPrice)
-const kerfWidth = ref(defaults.kerfWidth)
+// Refs de entrada - placa MDF (persistidos en localStorage)
+const sheetHeight = useLocalStorage('cabinet_sheetHeight', defaults.sheetHeight)
+const sheetWidth = useLocalStorage('cabinet_sheetWidth', defaults.sheetWidth)
+const boardPrice = useLocalStorage('cabinet_boardPrice', defaults.boardPrice)
+const kerfWidth = useLocalStorage('cabinet_kerfWidth', defaults.kerfWidth)
 
 // Composable para calculo de piezas
 const { piezasCalculadas } = usePiezas({
