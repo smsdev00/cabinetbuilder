@@ -102,11 +102,12 @@ export function usePiezas(refs) {
         }
 
         if (H <= 2 * E_cm) {
-            return crearError('Alto insuficiente para el espesor seleccionado')
+            return crearError('Alto insuficiente para alojar base y tapa')
         }
 
-        const anchoTotalFrente = L - (2 * E_cm)
-        const anchoDisponibleParaPuertas = anchoTotalFrente - luz
+        const anchoInterno = L - (2 * E_cm)
+        const altoInterno = H - (2 * E_cm)
+        const anchoDisponibleParaPuertas = anchoInterno - luz
         const anchoPuerta = anchoDisponibleParaPuertas / 2
 
         if (anchoPuerta <= 0.1) {
@@ -114,34 +115,36 @@ export function usePiezas(refs) {
         }
 
         // Validar ancho de marco si esta incluido
-        if (marco && anchoM > 0) {
+        if (marco) {
+            if (anchoM <= 0) {
+                return crearError('El ancho del marco debe ser mayor a cero')
+            }
             if (anchoM > VALIDATION_LIMITS.MAX_ANCHO_MARCO) {
                 return crearError(`Ancho del marco excede el maximo de ${VALIDATION_LIMITS.MAX_ANCHO_MARCO}cm`)
+            }
+            if (2 * anchoM >= anchoInterno || 2 * anchoM >= altoInterno) {
+                return crearError('El marco no cabe en el vano interior del mueble')
             }
         }
 
         const piezasBase = [
-            { etiqueta: 'Base', cantidad: 1, dim1: L, dim2: A, nota: 'Pieza inferior' },
-            { etiqueta: 'Tapa', cantidad: 1, dim1: L, dim2: A, nota: 'Pieza superior' },
+            { etiqueta: 'Base', cantidad: 1, dim1: anchoInterno, dim2: A, nota: 'Entre laterales' },
+            { etiqueta: 'Tapa', cantidad: 1, dim1: anchoInterno, dim2: A, nota: 'Entre laterales' },
             { etiqueta: 'Lateral', cantidad: 2, dim1: H, dim2: A, nota: 'Caras laterales' },
-            { etiqueta: 'Puerta', cantidad: 2, dim1: H, dim2: anchoPuerta, nota: `Frontal (${formatDecimal(luz)}cm separacion)` },
-            { etiqueta: 'Trasera', cantidad: 1, dim1: H, dim2: L - (2 * E_cm), nota: 'Posterior (entre laterales)' }
+            { etiqueta: 'Puerta', cantidad: 2, dim1: altoInterno, dim2: anchoPuerta, nota: `Embutida (${formatDecimal(luz)}cm separacion central)` },
+            { etiqueta: 'Trasera', cantidad: 1, dim1: altoInterno, dim2: anchoInterno, nota: 'Encajada entre los cuatro lados' }
         ]
 
         if (marco && anchoM > 0 && !isNaN(anchoM)) {
-            const anchoInternoFrente = L - (2 * E_cm)
-            const altoMarco = H - (2 * E_cm)
-
             piezasBase.push(
-                { etiqueta: 'Marco Lateral', cantidad: 2, dim1: altoMarco, dim2: anchoM, nota: 'Laterales del marco' },
-                { etiqueta: 'Marco Superior', cantidad: 1, dim1: anchoInternoFrente - (2 * anchoM), dim2: anchoM, nota: 'Superior del marco' },
-                { etiqueta: 'Marco Inferior', cantidad: 1, dim1: anchoInternoFrente - (2 * anchoM), dim2: anchoM, nota: 'Inferior del marco' },
-                { etiqueta: 'Barra Divisoria', cantidad: 1, dim1: altoMarco - (2 * anchoM), dim2: anchoM, nota: 'Barra central vertical' }
+                { etiqueta: 'Marco Lateral', cantidad: 2, dim1: altoInterno, dim2: anchoM, nota: 'Laterales del marco' },
+                { etiqueta: 'Marco Superior', cantidad: 1, dim1: anchoInterno - (2 * anchoM), dim2: anchoM, nota: 'Superior del marco' },
+                { etiqueta: 'Marco Inferior', cantidad: 1, dim1: anchoInterno - (2 * anchoM), dim2: anchoM, nota: 'Inferior del marco' },
+                { etiqueta: 'Barra Divisoria', cantidad: 1, dim1: altoInterno - (2 * anchoM), dim2: anchoM, nota: 'Barra central vertical' }
             )
         }
 
         return piezasBase
-            .filter(p => p.dim1 > 0.1 && p.dim2 > 0.1)
             .map(p => ({
                 ...p,
                 color: p.etiqueta.includes('Marco') || p.etiqueta.includes('Barra') ? colorMap['Marco'] : (colorMap[p.etiqueta] || '#6c757d'),
