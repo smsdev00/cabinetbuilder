@@ -1,5 +1,4 @@
 <template>
-    <a href="#main-content" class="skip-link">Saltar al contenido principal</a>
     <div class="container-fluid">
         <div class="main-card">
             <div class="header-section">

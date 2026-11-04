@@ -9,7 +9,10 @@
 }
 
 body {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background:
+        radial-gradient(circle at 15% 10%, rgba(254, 240, 138, 0.35) 0%, transparent 50%),
+        linear-gradient(135deg, #fbbf24 0%, #f97316 55%, #ea580c 100%);
+    background-attachment: fixed;
     min-height: 100vh;
     padding: 20px 0;
 }
